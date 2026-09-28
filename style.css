@@ -1,4 +1,1345 @@
+/* ==========================================================================
+   PERSONAL WORKSPACE - CUSTOMIZABLE CSS TEMPLATE
+   ==========================================================================
+   TABLE OF CONTENTS:
+   1. Design Tokens & CSS Variables (:root & [data-theme="dark"])
+      - Color System (Base, Surface, Primary, Accents, Text, Borders)
+      - Layout Dimensions & Sizing
+      - Typography Scale & Font Families
+      - Elevation, Shadows & Glassmorphism
+      - Animation & Transition Tokens
+   2. Modern Reset & Base Elements
+   3. Workspace Layout Shell (Sidebar + Main Content)
+   4. Sidebar Navigation (nav, logo, menu button, links, separators)
+   5. Nav Footer & Control Buttons (Theme, Audio, Settings)
+   6. Collapsed Sidebar States
+   7. Main Content Area & Top Header
+   8. Dashboard Cards & Grid System
+   9. Component Templates (Buttons, Badges, Inputs, NotePad, Calendar)
+   10. Responsive Breakpoints & Mobile Navigation
+   11. Accessibility & Motion Preferences
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. DESIGN TOKENS & CSS VARIABLES
+   💡 CUSTOMIZATION TIP: Change any value here to instantly update your entire workspace!
+   -------------------------------------------------------------------------- */
+:root {
+    /* --- 🎨 COLOR SYSTEM (Default Light Theme) --- */
+    --color-bg-base: #f8fafc;              /* Main page background */
+    --color-bg-surface: #ffffff;           /* Cards, sidebar, menus */
+    --color-bg-surface-hover: #f1f5f9;     /* Item hover background */
+    --color-bg-subtle: #f8fafc;            /* Sub-containers & secondary areas */
+    --color-bg-active: #e0e7ff;            /* Active navigation item pill */
+
+    /* --- 🖋️ TEXT COLORS --- */
+    --color-text-main: #0f172a;            /* Headings and primary text */
+    --color-text-muted: #64748b;           /* Descriptions, meta text, nav items */
+    --color-text-dim: #94a3b8;             /* Icons and placeholder hints */
+    --color-text-inverse: #ffffff;         /* Text on dark/primary backgrounds */
+
+    /* --- 🌟 ACCENT & BRAND COLORS --- */
+    --color-primary: #4f46e5;              /* Indigo Accent */
+    --color-primary-hover: #4338ca;        /* Darker primary on hover */
+    --color-primary-light: #eef2ff;        /* Light tint for badges & active states */
+    --color-primary-glow: rgba(79, 70, 229, 0.25);
+
+    --color-accent-teal: #0d9488;          /* Teal secondary accent */
+    --color-accent-cyan: #0284c7;          /* Cyan secondary accent */
+    --color-accent-amber: #d97706;         /* Amber / Warning */
+    --color-accent-rose: #e11d48;          /* Rose / Danger / Alert */
+    --color-accent-emerald: #059669;       /* Emerald / Success */
+
+    /* --- 🔲 BORDERS & DIVIDERS --- */
+    --color-border: #e2e8f0;               /* Standard border */
+    --color-border-hover: #cbd5e1;         /* Border on hover */
+    --color-separator: #e2e8f0;            /* Nav & section separators */
+
+    /* --- 📐 LAYOUT DIMENSIONS --- */
+    --sidebar-width: 250px;                /* Expanded sidebar width */
+    --sidebar-collapsed-width: 74px;       /* Collapsed sidebar width (icon only) */
+    --header-height: 64px;                 /* Top bar height */
+    --content-max-width: 1400px;           /* Content center constraint */
+
+    /* --- 🔤 TYPOGRAPHY --- */
+    --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+    --font-size-xs: 0.75rem;               /* 12px */
+    --font-size-sm: 0.875rem;              /* 14px */
+    --font-size-base: 1rem;                /* 16px */
+    --font-size-lg: 1.125rem;              /* 18px */
+    --font-size-xl: 1.25rem;               /* 20px */
+    --font-size-2xl: 1.5rem;               /* 24px */
+    --font-size-3xl: 1.875rem;             /* 30px */
+
+    /* --- 🔘 BORDER RADII --- */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 22px;
+    --radius-full: 9999px;
+
+    /* --- ☁️ SHADOWS & BLURS --- */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+    --shadow-primary-glow: 0 0 18px var(--color-primary-glow);
+    --backdrop-blur: blur(12px);
+
+    /* --- ⚡ TRANSITIONS & TIMINGS --- */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- 🌙 DARK THEME PALETTE (Toggle with data-theme="dark" on <html> or <body>) --- */
+[data-theme="dark"],
+body.dark-mode {
+    --color-bg-base: #0b0f19;              /* Deep dark background */
+    --color-bg-surface: #111827;           /* Dark slate card/nav background */
+    --color-bg-surface-hover: #1f2937;     /* Hover surface */
+    --color-bg-subtle: #0f172a;            /* Dark nested containers */
+    --color-bg-active: #312e81;            /* Dark active pill */
+
+    --color-text-main: #f8fafc;            /* Crisp white text */
+    --color-text-muted: #94a3b8;           /* Muted slate text */
+    --color-text-dim: #64748b;             /* Dim text & inactive icons */
+    --color-text-inverse: #0b0f19;
+
+    --color-primary: #6366f1;              /* Glowing Electric Indigo */
+    --color-primary-hover: #818cf8;        /* Lighter indigo on dark hover */
+    --color-primary-light: rgba(99, 102, 241, 0.15);
+    --color-primary-glow: rgba(99, 102, 241, 0.35);
+
+    --color-border: #1e293b;               /* Subtle dark border */
+    --color-border-hover: #334155;
+    --color-separator: #1e293b;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.7);
+}
+
+/* --------------------------------------------------------------------------
+   2. MODERN RESET & BASE ELEMENTS
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-main);
+    background-color: var(--color-bg-base);
+    color: var(--color-text-main);
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-dim);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font-family: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+}
+
+ul {
+    list-style: none;
+}
+
+/* --------------------------------------------------------------------------
+   3. WORKSPACE LAYOUT SHELL
+   -------------------------------------------------------------------------- */
+.workspace-container,
+.app-container {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    min-height: calc(100vh - var(--header-height));
+    position: relative;
+}
+
+/* --------------------------------------------------------------------------
+   4. SIDEBAR NAVIGATION (<nav>)
+   -------------------------------------------------------------------------- */
+nav {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    height: calc(100vh - var(--header-height));
+    position: sticky;
+    top: var(--header-height);
+    left: 0;
+    background-color: var(--color-bg-surface);
+    border-right: 1px solid var(--color-border);
+    border-top: none;
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 1rem;
+    gap: 0.85rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    white-space: nowrap;
+    z-index: 90;
+    transition: width var(--transition-normal), min-width var(--transition-normal), padding var(--transition-normal), opacity var(--transition-normal), border var(--transition-normal), background-color var(--transition-normal);
+}
+
+/* Header row inside nav: Hamburger Button + Logo */
+.nav-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.nav-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 1.4rem;
+    transition: all var(--transition-fast);
+}
+
+.nav-btn:hover {
+    background-color: var(--color-bg-surface-hover);
+    color: var(--color-primary);
+    transform: scale(1.04);
+}
+
+/* Sidebar Brand Area in Header */
+/* Brand hidden by default (sidebar closed) */
+.sidebar-brand-wrapper {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: width var(--transition-normal), opacity var(--transition-normal), margin var(--transition-normal);
+}
+
+/* Brand shown when sidebar is open */
+body:not(.sidebar-collapsed) .sidebar-brand-wrapper {
+    width: 170px;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Nav toggle: visible by default */
+.header-nav-toggle {
+    display: flex;
+    flex-shrink: 0;
+}
+
+/* Keep nav toggle always visible — brand slides in next to it */
+
+/* Site Logo */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.25rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    background: transparent;
+    transition: color var(--transition-fast);
+}
+
+.nav-logo:hover {
+    background-color: transparent;
+}
+
 .nav-logo i {
+    font-size: 1.9rem;
+    color: var(--color-text-main);
+    transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.nav-logo:hover i {
+    color: var(--color-primary);
+    transform: rotate(6deg);
+}
+
+.nav-logo-text {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-text-main);
+    white-space: nowrap;
+}
+
+/* Nav Separator */
+.separator {
+    height: 1px;
+    background-color: var(--color-separator);
+    margin: 0.35rem 0.25rem;
+    flex-shrink: 0;
+}
+
+/* Navigation Lists (supports both .navigation-buttons and typo .nagivation-buttons) */
+.navigation-buttons,
+.nagivation-buttons {
+    display: flex;
+    flex-direction: column;
+}
+
+.navigation-buttons ul,
+.nagivation-buttons ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+/* Nav Link Item */
+.navigation-buttons li a,
+.nagivation-buttons li a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text-muted);
+    transition: all var(--transition-fast);
+    position: relative;
+    white-space: nowrap;
+}
+
+/* Nav Link Icons (Boxicons) */
+.navigation-buttons li a i,
+.nagivation-buttons li a i {
+    font-size: 1.25rem;
+    min-width: 22px;
+    text-align: center;
+    color: var(--color-text-dim);
+    transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+/* Hover state */
+.navigation-buttons li a:hover,
+.nagivation-buttons li a:hover {
+    background-color: var(--color-bg-surface-hover);
+    color: var(--color-text-main);
+    transform: translateX(3px);
+}
+
+.navigation-buttons li a:hover i,
+.nagivation-buttons li a:hover i {
+    color: var(--color-primary);
+    transform: scale(1.1);
+}
+
+/* Active Nav State */
+.navigation-buttons li a.active,
+.nagivation-buttons li a.active {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.navigation-buttons li a.active i,
+.nagivation-buttons li a.active i {
+    color: var(--color-primary);
+}
+
+.navigation-buttons li a.active::before,
+.nagivation-buttons li a.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%;
+    height: 60%;
+    width: 3.5px;
+    background-color: var(--color-primary);
+    border-radius: 0 var(--radius-full) var(--radius-full) 0;
+}
+
+/* --------------------------------------------------------------------------
+   5. NAV FOOTER & BOTTOM CONTROLS
+   -------------------------------------------------------------------------- */
+/* Targets either .nav-footer or the bottom <div> in <nav> */
+.nav-footer,
+nav > div:last-child {
+    margin-top: auto;
+    padding-top: 0.65rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    border-top: 1px solid var(--color-separator);
+}
+
+.footer-btn,
+nav > div:last-child button,
+nav > div:last-child a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.85rem;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.footer-btn i,
+nav > div:last-child button i {
+    font-size: 1.25rem;
+    min-width: 22px;
+    color: var(--color-text-dim);
+    transition: color var(--transition-fast);
+}
+
+.footer-btn:hover,
+nav > div:last-child button:hover {
+    background-color: var(--color-bg-surface-hover);
+    color: var(--color-text-main);
+}
+
+.footer-btn:hover i,
+nav > div:last-child button:hover i {
+    color: var(--color-primary);
+}
+
+/* --------------------------------------------------------------------------
+   6. COLLAPSED SIDEBAR STATE
+   Add class 'collapsed' to <nav> (e.g. <nav class="collapsed">)
+   Hides the entire sidebar so only the header navigation button remains visible.
+   -------------------------------------------------------------------------- */
+nav.collapsed,
+body.sidebar-collapsed nav {
+    width: 0;
+    min-width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-right-color: transparent;
+    overflow: hidden;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   7. MAIN CONTENT AREA & TOP HEADER
+   -------------------------------------------------------------------------- */
+.main-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - var(--header-height));
+    background-color: var(--color-bg-base);
+    overflow-y: auto;
+}
+
+/* Top App Bar */
+.workspace-header {
+    height: var(--header-height);
+    background-color: var(--color-bg-surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    transition: background-color var(--transition-normal);
+}
+
+/* Dividing line between header and main content that blends seamlessly with the sidebar */
+.workspace-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    height: 1px;
+    background-color: var(--color-border);
+    transition: left var(--transition-normal);
+}
+
+body.sidebar-collapsed .workspace-header::after {
+    left: 0;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.header-title-group h1 {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-text-main);
+}
+
+.header-title-group p {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Search Box */
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 0.45rem 0.9rem;
+    gap: 0.5rem;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    transition: all var(--transition-fast);
+}
+
+.search-bar:focus-within {
+    border-color: var(--color-primary);
+    background-color: var(--color-bg-surface);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.search-bar input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--color-text-main);
+    font-size: var(--font-size-sm);
+    font-family: inherit;
+    width: 180px;
+}
+
+/* Workspace Sections Container */
+.workspace-body {
+    padding: 2rem;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* --------------------------------------------------------------------------
+   8. DASHBOARD CARDS & GRID SYSTEM
+   -------------------------------------------------------------------------- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Card Template */
+.card {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-title i {
+    color: var(--color-primary);
+    font-size: 1.25rem;
+}
+
+.card-body {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+}
+
+.card-footer {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-separator);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* --------------------------------------------------------------------------
+   9. COMPONENT TEMPLATES (Buttons, Badges, Form Inputs)
+   -------------------------------------------------------------------------- */
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.1rem;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: var(--color-text-inverse);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+    box-shadow: var(--shadow-primary-glow);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-main);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-bg-surface-hover);
+    border-color: var(--color-border-hover);
+}
+
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    transition: all var(--transition-fast);
+}
+
+.btn-icon:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-light);
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+}
+
+.badge-primary {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+.badge-emerald {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--color-accent-emerald);
+}
+
+.badge-amber {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: var(--color-accent-amber);
+}
+
+/* Form Inputs & Textareas */
+.input-control,
+.textarea-control {
+    width: 100%;
+    padding: 0.65rem 0.9rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg-subtle);
+    color: var(--color-text-main);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.input-control:focus,
+.textarea-control:focus {
+    background-color: var(--color-bg-surface);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.textarea-control {
+    resize: vertical;
+    min-height: 100px;
+    font-family: var(--font-mono);
+}
+
+/* Stat Widget */
+.stat-box {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-lg);
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-value {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-text-main);
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   10. RESPONSIVE BREAKPOINTS & MOBILE NAVIGATION
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+    }
+
+    nav {
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        left: 0;
+        width: 100%;
+        height: auto;
+        min-width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0.5rem 0.75rem;
+        border-right: none;
+        border-top: 1px solid var(--color-border);
+        box-shadow: var(--shadow-lg);
+        transition: transform var(--transition-normal), opacity var(--transition-normal);
+    }
+
+    nav.collapsed {
+        transform: translateY(100%);
+        height: 0;
+        min-height: 0;
+        padding: 0;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .nav-logo,
+    .nav-menu-btn,
+    .separator,
+    .nav-footer span,
+    nav > div:last-child span,
+    .navigation-buttons li a span,
+    .nagivation-buttons li a span {
+        display: none;
+    }
+
+    .navigation-buttons ul,
+    .nagivation-buttons ul {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .navigation-buttons li a,
+    .nagivation-buttons li a {
+        padding: 0.5rem;
+    }
+
+    .nav-footer,
+    nav > div:last-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+        flex-direction: row;
+    }
+
+    .main-content {
+        margin-bottom: 70px;
+    }
+
+    .workspace-header {
+        padding: 0 1rem;
+    }
+
+    .workspace-header::after {
+        left: 0 !important;
+    }
+
+    .workspace-body {
+        padding: 1.25rem 1rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   11. ACCESSIBILITY & PREFERENCES
+   -------------------------------------------------------------------------- */
+:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ==========================================================================
+   12. TIMER WIDGET
+   ========================================================================== */
+.timer-widget {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 0.4rem 0.85rem;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.timer-widget:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-sm);
+}
+
+.timer-display-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.timer-display {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    color: var(--color-text-main);
+    letter-spacing: 0.05em;
+    line-height: 1;
+    min-width: 80px;
+    text-align: center;
+}
+
+.timer-display.timer-running {
+    color: var(--color-primary);
+}
+
+.timer-display.timer-alarm-fire {
+    color: var(--color-accent-rose);
+    animation: timer-pulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes timer-pulse {
+    from { opacity: 1; }
+    to { opacity: 0.35; }
+}
+
+.timer-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.timer-input {
+    width: 36px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-family: var(--font-mono);
+    text-align: center;
+    outline: none;
+    padding: 0.1rem 0.1rem;
+    -moz-appearance: textfield;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.timer-input::-webkit-inner-spin-button,
+.timer-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+
+.timer-input:focus {
+    border-bottom-color: var(--color-primary);
+    color: var(--color-text-main);
+}
+
+.timer-sep {
+    color: var(--color-text-dim);
+    font-size: var(--font-size-xs);
+    font-family: var(--font-mono);
+    line-height: 1;
+}
+
+.timer-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.timer-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    color: var(--color-text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.timer-btn:hover {
+    background-color: var(--color-bg-surface-hover);
+    color: var(--color-primary);
+}
+
+.timer-btn-alarm.alarm-active {
+    color: var(--color-accent-rose);
+}
+
+/* ==========================================================================
+   13. WORKSPACE TAB LAYOUT
+   ========================================================================== */
+.ws-section {
+    width: 100%;
+    height: calc(100vh - var(--header-height) - 4rem);
+    min-height: 500px;
+}
+
+.ws-grid {
+    display: grid;
+    grid-template-columns: 60% 40%;
+    gap: 1.25rem;
+    height: 100%;
+}
+
+.ws-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    min-height: 0;
+}
+
+.ws-right {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+/* Shared card base */
+.ws-card {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ws-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.ws-card-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ws-card-title i {
+    color: var(--color-primary);
+    font-size: 1.1rem;
+}
+
+/* Notepad card — takes ~30% of left height */
+.ws-notepad-card {
+    flex: 0 0 30%;
+    min-height: 150px;
+}
+
+.ws-notepad-area {
+    flex: 1;
+    resize: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-text-main);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    line-height: 1.7;
+    width: 100%;
+    height: 100%;
+    min-height: 80px;
+    padding: 0;
+    transition: color var(--transition-fast);
+}
+
+.ws-notepad-area::placeholder {
+    color: var(--color-text-dim);
+    font-style: italic;
+}
+
+/* Task Adder card — grows to fill remaining left space */
+.ws-task-adder-card {
+    flex: 1;
+    min-height: 0;
+}
+
+.ws-task-form {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: nowrap;
+}
+
+.ws-task-check-label {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.ws-task-checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.ws-task-name-input {
+    flex: 1;
+    min-width: 0;
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-main);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    padding: 0.5rem 0.75rem;
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ws-task-name-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+    background: var(--color-bg-surface);
+}
+
+.ws-task-time-input {
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    padding: 0.5rem 0.5rem;
+    outline: none;
+    flex-shrink: 0;
+    width: 96px;
+    transition: border-color var(--transition-fast);
+}
+
+.ws-task-time-input:focus {
+    border-color: var(--color-primary);
+    color: var(--color-text-main);
+}
+
+.ws-task-add-btn {
+    background-color: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 0.5rem 0.9rem;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-shrink: 0;
+    transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.ws-task-add-btn:hover {
+    background-color: var(--color-primary-hover);
+    box-shadow: var(--shadow-primary-glow);
+    transform: translateY(-1px);
+}
+
+/* Tasks list card — full right column */
+.ws-tasks-card {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+}
+
+.ws-task-count {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-dim);
+    font-weight: 500;
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 0.2rem 0.6rem;
+}
+
+.ws-task-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    padding-right: 0.25rem;
+}
+
+.ws-task-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    color: var(--color-text-dim);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+.ws-task-empty i {
     font-size: 2rem;
-    color: black;
+    opacity: 0.45;
+}
+
+/* Individual task item */
+.ws-task-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-subtle);
+    transition: border-color var(--transition-fast), background-color var(--transition-fast), opacity var(--transition-fast);
+    animation: ws-task-in 0.2s ease;
+}
+
+@keyframes ws-task-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.ws-task-item:hover {
+    border-color: var(--color-border-hover);
+    background-color: var(--color-bg-surface-hover);
+}
+
+.ws-task-item.done {
+    opacity: 0.55;
+}
+
+.ws-task-item.done .ws-task-item-name {
+    text-decoration: line-through;
+    color: var(--color-text-dim);
+}
+
+.ws-task-item-check {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.ws-task-item-name {
+    flex: 1;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color var(--transition-fast);
+}
+
+.ws-task-item-time {
+    font-size: var(--font-size-xs);
+    font-family: var(--font-mono);
+    color: var(--color-text-dim);
+    flex-shrink: 0;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.1rem 0.4rem;
+}
+
+.ws-task-item-delete {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    color: var(--color-text-dim);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.ws-task-item:hover .ws-task-item-delete {
+    opacity: 1;
+}
+
+.ws-task-item-delete:hover {
+    color: var(--color-accent-rose);
+    background-color: rgba(225, 29, 72, 0.1);
+}
+
+/* Responsive workspace layout */
+@media (max-width: 900px) {
+    .ws-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    .ws-section {
+        height: auto;
+    }
+    .ws-tasks-card {
+        height: 400px;
+    }
 }

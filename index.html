@@ -1,14 +1,18 @@
 <!DOCTYPE html>
-
-<html lang=en>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Workspace</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
+    <title>Zen Space</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <!-- Icons (BoxIcons) -->
     <!-- Basic Icons -->
@@ -17,60 +21,218 @@
     <link href="https://cdn.boxicons.com/3.0.8/fonts/filled/boxicons-filled.min.css" rel="stylesheet">
     <!-- Brand Icons -->
     <link href="https://cdn.boxicons.com/3.0.8/fonts/brands/boxicons-brands.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
 </head>
 
 <body>
 
+    <!-- Top Header Bar -->
+    <header class="workspace-header">
+        <div class="header-left">
 
-    <!-- Default Buttons-->
-    <nav>
-
-        <!-- Nav Opener-->
-        <div class="nav-menu-btn">
-            <button class="nav-btn">
+            <!-- Nav Toggle Button (visible when sidebar is closed) -->
+            <button class="nav-btn header-nav-toggle" id="sidebar-toggle" title="Toggle Navigation"
+                aria-label="Toggle navigation">
                 <i class="bx bx-menu"></i>
             </button>
+
+            <!-- Sidebar Brand (visible when sidebar is open) -->
+            <div class="sidebar-brand-wrapper" id="sidebar-brand-wrapper">
+                <div class="nav-logo" title="Zen Space">
+                    <i class="bxl bx-github"></i>
+                    <span class="nav-logo-text">Zen Space</span>
+                </div>
+            </div>
+
+            <!-- Page Title -->
+            <div class="header-title-group">
+                <h1>Workspace</h1>
+            </div>
         </div>
 
-        <!-- Site Logo-->
-        <div class="nav-logo">
-            <i class="bxl bx-github"></i>
+        <!-- Timer Widget -->
+        <div class="header-actions">
+            <div class="timer-widget" id="timer-widget">
+                <div class="timer-display-group">
+                    <span class="timer-display" id="timer-display">00:00:00</span>
+                    <div class="timer-controls">
+                        <input class="timer-input" id="timer-hours" type="number" min="0" max="23" value="0"
+                            placeholder="HH" aria-label="Hours">
+                        <span class="timer-sep">:</span>
+                        <input class="timer-input" id="timer-minutes" type="number" min="0" max="59" value="0"
+                            placeholder="MM" aria-label="Minutes">
+                        <span class="timer-sep">:</span>
+                        <input class="timer-input" id="timer-seconds" type="number" min="0" max="59" value="0"
+                            placeholder="SS" aria-label="Seconds">
+                    </div>
+                </div>
+                <div class="timer-actions">
+                    <button class="timer-btn" id="timer-start" title="Start Timer"><i class="bx bx-play"></i></button>
+                    <button class="timer-btn" id="timer-pause" title="Pause Timer" style="display:none"><i
+                            class="bx bx-pause"></i></button>
+                    <button class="timer-btn" id="timer-reset" title="Reset Timer"><i class="bx bx-reset"></i></button>
+                    <button class="timer-btn timer-btn-alarm" id="timer-alarm-toggle" title="Alarm Off"><i
+                            class="bx bx-bell-off"></i></button>
+                </div>
+            </div>
         </div>
+    </header>
 
-        <!-- Navigation List-->
-        <div class="navigation-buttons">
-            <ul>
-                <li><a href="#Workspace">Workspace</a></li>
-                <li><a href="#calendar">Calendar</a></li>
-                <li><a href="#project-manager">Project Manager</a></li>
-                <li><a href="#notepad">Notepad</a></li>
+    <!-- Workspace Layout Container -->
+    <div class="workspace-container">
 
-            </ul>
-        </div>
+        <!-- Sidebar Navigation -->
+        <nav id="workspace-sidebar">
 
-        <!-- Nav Separator -->
-        <div class="separator"></div>
-
-        <!-- Links-->
-        <div class="nagivation-buttons">
-            <ul>
-                <li><a href="#notebook">Notebook</a></li>
-                <li><a href="#typing-test">Typing Test</a></li>
-            </ul>
+            <!-- Primary Navigation List -->
+            <div class="navigation-buttons">
+                <ul>
+                    <li>
+                        <a href="#Workspace" class="active">
+                            <i class="bx bx-briefcase"></i>
+                            <span>Workspace</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#calendar">
+                            <i class="bx bx-calendar"></i>
+                            <span>Calendar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#project-manager">
+                            <i class="bx bx-briefcase-alt-2"></i>
+                            <span>Project Manager</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#notepad">
+                            <i class="bx bx-edit-alt"></i>
+                            <span>Notepad</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
             <!-- Nav Separator -->
             <div class="separator"></div>
 
-        </div>
+            <!-- Secondary Links -->
+            <div class="navigation-buttons">
+                <ul>
+                    <li>
+                        <a href="#notebook">
+                            <i class="bx bx-book-open"></i>
+                            <span>Notebook</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#typing-test">
+                            <i class="bx bx-keyboard"></i>
+                            <span>Typing Test</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
-        <div>
-            mode
-            volume
-            settings
+            <!-- Nav Separator -->
+            <div class="separator"></div>
 
-        </div>
+            <!-- Nav Footer Controls -->
+            <div class="nav-footer">
+                <button class="footer-btn" id="theme-toggle" title="Theme">
+                    <i class="bx bx-moon"></i>
+                    <span>mode</span>
+                </button>
+                <button class="footer-btn" id="volume-toggle" title="Volume">
+                    <i class="bx bx-volume-full"></i>
+                    <span>volume</span>
+                </button>
+                <button class="footer-btn" id="settings-btn" title="Settings">
+                    <i class="bx bx-cog"></i>
+                    <span>settings</span>
+                </button>
+            </div>
 
-    </nav>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <div class="workspace-body">
+
+                <!-- =============================================
+                     WORKSPACE SECTION
+                     ============================================= -->
+                <section id="Workspace" class="ws-section">
+                    <div class="ws-grid">
+
+                        <!-- LEFT COLUMN (60%) -->
+                        <div class="ws-left">
+
+                            <!-- Notepad Card -->
+                            <div class="ws-card ws-notepad-card">
+                                <div class="ws-card-header">
+                                    <span class="ws-card-title"><i class="bx bx-edit-alt"></i> Notes</span>
+                                    <button class="btn-icon ws-notepad-clear" id="notepad-clear" title="Clear notes"><i
+                                            class="bx bx-trash"></i></button>
+                                </div>
+                                <textarea class="ws-notepad-area" id="notepad-area"
+                                    placeholder="Start typing your notes here..." aria-label="Notepad"
+                                    spellcheck="false"></textarea>
+                            </div>
+
+                            <!-- Task Adder Card -->
+                            <div class="ws-card ws-task-adder-card">
+                                <div class="ws-card-header">
+                                    <span class="ws-card-title"><i class="bx bx-plus-circle"></i> Add Task</span>
+                                </div>
+                                <form class="ws-task-form" id="task-form" autocomplete="off">
+                                    <label class="ws-task-check-label" title="Mark as done immediately">
+                                        <input type="checkbox" id="task-done-initial" class="ws-task-checkbox">
+                                    </label>
+                                    <input type="text" class="ws-task-name-input" id="task-name-input"
+                                        placeholder="Task name..." aria-label="Task name" required>
+                                    <input type="time" class="ws-task-time-input" id="task-time-input"
+                                        aria-label="Task time">
+                                    <button type="submit" class="ws-task-add-btn" id="task-add-btn">
+                                        <i class="bx bx-plus"></i> Add
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
+
+                        <!-- RIGHT COLUMN (40%) -->
+                        <div class="ws-right">
+
+                            <!-- Tasks List Card -->
+                            <div class="ws-card ws-tasks-card">
+                                <div class="ws-card-header">
+                                    <span class="ws-card-title"><i class="bx bx-check-square"></i> Tasks</span>
+                                    <span class="ws-task-count" id="task-count">0 tasks</span>
+                                </div>
+                                <ul class="ws-task-list" id="task-list">
+                                    <!-- Tasks populated by script.js -->
+                                    <li class="ws-task-empty" id="task-empty-state">
+                                        <i class="bx bx-inbox"></i>
+                                        <span>No tasks yet. Add one!</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- Other sections go below -->
+
+            </div>
+        </main>
+
+    </div>
 
 </body>
 
