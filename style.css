@@ -1081,10 +1081,91 @@ body.sidebar-collapsed .workspace-header::after {
     font-size: 1.1rem;
 }
 
-/* Notepad card — takes ~30% of left height */
+/* Notepad card — header group and actions */
+.ws-header-group {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+}
+
+.ws-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.ws-btn-sm {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--color-text-main);
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.ws-btn-sm i {
+    pointer-events: none;
+}
+
+.ws-btn-sm:hover {
+    transform: translateY(-1px);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.ws-notes-select {
+    background: var(--color-bg-subtle);
+    color: var(--color-text-main);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.25rem 0.55rem;
+    font-size: var(--font-size-xs);
+    font-family: inherit;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    max-width: 220px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.ws-notes-select:hover,
+.ws-notes-select:focus {
+    border-color: var(--color-primary);
+    background-color: var(--color-bg-surface);
+}
+
+.ws-notes-rename-input {
+    background: var(--color-bg-surface);
+    color: var(--color-text-main);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    padding: 0.25rem 0.55rem;
+    font-size: var(--font-size-xs);
+    font-family: inherit;
+    font-weight: 500;
+    outline: none;
+    width: 180px;
+    max-width: 220px;
+    box-shadow: 0 0 0 2px var(--color-primary-light);
+    transition: border-color var(--transition-fast);
+}
+
+/* Notepad card — takes majority of left height (~62%) */
 .ws-notepad-card {
-    flex: 0 0 30%;
-    min-height: 150px;
+    flex: 1;
+    min-height: 250px;
 }
 
 .ws-notepad-area {
@@ -1099,7 +1180,7 @@ body.sidebar-collapsed .workspace-header::after {
     line-height: 1.7;
     width: 100%;
     height: 100%;
-    min-height: 80px;
+    min-height: 120px;
     padding: 0;
     transition: color var(--transition-fast);
 }
@@ -1109,147 +1190,269 @@ body.sidebar-collapsed .workspace-header::after {
     font-style: italic;
 }
 
-/* Task Adder card — grows to fill remaining left space */
-.ws-task-adder-card {
+/* Task Schedule Table Card — compact bottom card (~38%) */
+.ws-schedule-card {
+    flex: 0 0 38%;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Philippine Time (GMT+8) live clock badge */
+.ws-schedule-clock {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-primary);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.02em;
+    user-select: none;
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+}
+
+.ws-schedule-clock i {
+    font-size: 0.95rem;
+    color: var(--color-primary);
+}
+
+.ws-clock-tz {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.05rem 0.3rem;
+    margin-left: 0.15rem;
+}
+
+.ws-table-container {
     flex: 1;
     min-height: 0;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-subtle);
 }
 
-.ws-task-form {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    flex-wrap: nowrap;
+.ws-schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-xs);
+    text-align: left;
 }
 
-.ws-task-check-label {
-    display: flex;
+.ws-schedule-table th {
+    position: sticky;
+    top: 0;
+    background: var(--color-bg-surface);
+    color: var(--color-text-muted);
+    font-weight: 600;
+    padding: 0.55rem 0.65rem;
+    border-bottom: 1px solid var(--color-border);
+    z-index: 2;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.ws-schedule-table th.col-drag { width: 26px; text-align: center; }
+.ws-schedule-table th.col-name { width: 42%; }
+.ws-schedule-table th.col-time { width: 26%; }
+.ws-schedule-table th.col-status { width: 18%; }
+.ws-schedule-table th.col-check { width: 8%; text-align: center; }
+.ws-schedule-table th.col-del { width: 28px; }
+
+/* Drag and Drop styles */
+body.is-dragging-active,
+body.is-dragging-active * {
+    cursor: grabbing !important;
+    user-select: none !important;
+}
+
+.ws-drag-handle {
+    cursor: grab;
+    color: var(--color-text-dim);
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: var(--radius-sm);
+    opacity: 0.65;
+    user-select: none;
+    touch-action: none;
     flex-shrink: 0;
-    cursor: pointer;
+    transition: opacity var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.ws-task-checkbox {
+.ws-drag-handle:hover {
+    opacity: 1;
+    color: var(--color-primary);
+    background-color: var(--color-bg-surface-hover);
+}
+
+.ws-drag-dots {
+    width: 14px;
+    height: 14px;
+    display: block;
+    pointer-events: none;
+}
+
+.ws-drag-placeholder {
+    opacity: 0.25 !important;
+    background: rgba(79, 70, 229, 0.08) !important;
+    outline: 2px dashed var(--color-primary) !important;
+    outline-offset: -2px;
+}
+
+.ws-drag-floating {
+    position: fixed !important;
+    z-index: 99999 !important;
+    pointer-events: none !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--color-primary) !important;
+    background: var(--color-bg-surface) !important;
+    border-radius: var(--radius-md) !important;
+    opacity: 0.95 !important;
+    transform: scale(1.025);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.ws-drag-floating table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-xs);
+}
+
+.ws-drag-floating td {
+    padding: 0.3rem 0.45rem;
+    vertical-align: middle;
+}
+
+.ws-schedule-table td {
+    padding: 0.3rem 0.45rem;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+    background: transparent;
+    transition: background-color var(--transition-fast);
+}
+
+.ws-schedule-table tbody tr:hover td {
+    background: var(--color-bg-surface-hover);
+}
+
+.ws-schedule-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.ws-tbl-input {
+    width: 100%;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-main);
+    font-size: var(--font-size-xs);
+    font-family: inherit;
+    padding: 0.35rem 0.45rem;
+    outline: none;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.ws-tbl-input:hover {
+    border-color: var(--color-border);
+    background: var(--color-bg-surface);
+}
+
+.ws-tbl-input:focus {
+    border-color: var(--color-primary);
+    background: var(--color-bg-surface);
+    box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.ws-tbl-time {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+}
+
+.ws-tbl-status {
+    font-size: 0.72rem;
+}
+
+.ws-tbl-checkbox {
     width: 16px;
     height: 16px;
     accent-color: var(--color-primary);
     cursor: pointer;
-    flex-shrink: 0;
+    display: block;
+    margin: 0 auto;
 }
 
-.ws-task-name-input {
-    flex: 1;
-    min-width: 0;
-    background: var(--color-bg-subtle);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    color: var(--color-text-main);
-    font-family: inherit;
-    font-size: var(--font-size-sm);
-    padding: 0.5rem 0.75rem;
-    outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.ws-task-name-input:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-primary-light);
-    background: var(--color-bg-surface);
-}
-
-.ws-task-time-input {
-    background: var(--color-bg-subtle);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    color: var(--color-text-muted);
-    font-family: var(--font-mono);
-    font-size: var(--font-size-xs);
-    padding: 0.5rem 0.5rem;
-    outline: none;
-    flex-shrink: 0;
-    width: 96px;
-    transition: border-color var(--transition-fast);
-}
-
-.ws-task-time-input:focus {
-    border-color: var(--color-primary);
-    color: var(--color-text-main);
-}
-
-.ws-task-add-btn {
-    background-color: var(--color-primary);
-    color: #fff;
+.ws-tbl-del-btn {
+    width: 24px;
+    height: 24px;
     border: none;
-    border-radius: var(--radius-md);
-    padding: 0.5rem 0.9rem;
-    font-size: var(--font-size-sm);
-    font-weight: 600;
-    font-family: inherit;
+    background: transparent;
+    color: var(--color-text-dim);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    flex-shrink: 0;
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+    justify-content: center;
+    font-size: 0.95rem;
+    opacity: 0;
+    transition: opacity var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.ws-task-add-btn:hover {
-    background-color: var(--color-primary-hover);
-    box-shadow: var(--shadow-primary-glow);
-    transform: translateY(-1px);
+.ws-schedule-table tr:hover .ws-tbl-del-btn {
+    opacity: 1;
 }
 
-/* Tasks list card — full right column */
+.ws-tbl-del-btn:hover {
+    color: var(--color-accent-rose);
+    background: rgba(225, 29, 72, 0.12);
+}
+
+/* Cross out row when done */
+.ws-schedule-table tr.row-done {
+    opacity: 0.5;
+}
+
+.ws-schedule-table tr.row-done .ws-tbl-input {
+    text-decoration: line-through;
+    color: var(--color-text-dim) !important;
+}
+
+/* Quick Checklist Card (Right Column) */
 .ws-tasks-card {
     flex: 1;
     height: 100%;
     min-height: 0;
 }
 
-.ws-task-count {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-dim);
-    font-weight: 500;
-    background: var(--color-bg-subtle);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-full);
-    padding: 0.2rem 0.6rem;
-}
-
-.ws-task-list {
+.ws-quick-list {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.45rem;
     overflow-y: auto;
     flex: 1;
     min-height: 0;
     padding-right: 0.25rem;
 }
 
-.ws-task-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 2rem 1rem;
-    color: var(--color-text-dim);
-    font-size: var(--font-size-sm);
-    text-align: center;
-}
-
-.ws-task-empty i {
-    font-size: 2rem;
-    opacity: 0.45;
-}
-
-/* Individual task item */
-.ws-task-item {
+.ws-quick-item {
     display: flex;
     align-items: center;
     gap: 0.65rem;
-    padding: 0.6rem 0.75rem;
+    padding: 0.4rem 0.65rem;
     border-radius: var(--radius-md);
     border: 1px solid var(--color-border);
     background: var(--color-bg-subtle);
@@ -1262,21 +1465,21 @@ body.sidebar-collapsed .workspace-header::after {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-.ws-task-item:hover {
+.ws-quick-item:hover {
     border-color: var(--color-border-hover);
     background-color: var(--color-bg-surface-hover);
 }
 
-.ws-task-item.done {
+.ws-quick-item.done {
     opacity: 0.55;
 }
 
-.ws-task-item.done .ws-task-item-name {
+.ws-quick-item.done .ws-quick-input {
     text-decoration: line-through;
     color: var(--color-text-dim);
 }
 
-.ws-task-item-check {
+.ws-quick-check {
     width: 16px;
     height: 16px;
     accent-color: var(--color-primary);
@@ -1284,28 +1487,32 @@ body.sidebar-collapsed .workspace-header::after {
     flex-shrink: 0;
 }
 
-.ws-task-item-name {
+.ws-quick-input {
     flex: 1;
-    font-size: var(--font-size-sm);
-    color: var(--color-text-main);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: color var(--transition-fast);
-}
-
-.ws-task-item-time {
-    font-size: var(--font-size-xs);
-    font-family: var(--font-mono);
-    color: var(--color-text-dim);
-    flex-shrink: 0;
-    background: var(--color-bg-surface);
-    border: 1px solid var(--color-border);
+    min-width: 0;
+    background: transparent;
+    border: 1px solid transparent;
     border-radius: var(--radius-sm);
-    padding: 0.1rem 0.4rem;
+    color: var(--color-text-main);
+    font-size: var(--font-size-sm);
+    font-family: inherit;
+    padding: 0.3rem 0.45rem;
+    outline: none;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
 }
 
-.ws-task-item-delete {
+.ws-quick-input:hover {
+    border-color: var(--color-border);
+    background: var(--color-bg-surface);
+}
+
+.ws-quick-input:focus {
+    border-color: var(--color-primary);
+    background: var(--color-bg-surface);
+    box-shadow: 0 0 0 2px var(--color-primary-light);
+}
+
+.ws-quick-del {
     width: 24px;
     height: 24px;
     border-radius: var(--radius-sm);
@@ -1321,13 +1528,13 @@ body.sidebar-collapsed .workspace-header::after {
     transition: opacity var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.ws-task-item:hover .ws-task-item-delete {
+.ws-quick-item:hover .ws-quick-del {
     opacity: 1;
 }
 
-.ws-task-item-delete:hover {
+.ws-quick-del:hover {
     color: var(--color-accent-rose);
-    background-color: rgba(225, 29, 72, 0.1);
+    background-color: rgba(225, 29, 72, 0.12);
 }
 
 /* Responsive workspace layout */

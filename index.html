@@ -72,9 +72,9 @@
                     <button class="timer-btn" id="timer-start" title="Start Timer"><i class="bx bx-play"></i></button>
                     <button class="timer-btn" id="timer-pause" title="Pause Timer" style="display:none"><i
                             class="bx bx-pause"></i></button>
-                    <button class="timer-btn" id="timer-reset" title="Reset Timer"><i class="bx bx-reset"></i></button>
-                    <button class="timer-btn timer-btn-alarm" id="timer-alarm-toggle" title="Alarm Off"><i
-                            class="bx bx-bell-off"></i></button>
+                    <button class="timer-btn" id="timer-reset" title="Reset Timer"><i class="bx bx-undo"></i></button>
+                    <button class="timer-btn timer-btn-alarm" id="timer-alarm-toggle" title="Alarm Off">
+                        <i class="bx bx-bell-slash"></i></button>
                 </div>
             </div>
         </div>
@@ -174,32 +174,67 @@
                             <!-- Notepad Card -->
                             <div class="ws-card ws-notepad-card">
                                 <div class="ws-card-header">
-                                    <span class="ws-card-title"><i class="bx bx-edit-alt"></i> Notes</span>
-                                    <button class="btn-icon ws-notepad-clear" id="notepad-clear" title="Clear notes"><i
-                                            class="bx bx-trash"></i></button>
+                                    <div class="ws-header-group">
+                                        <span class="ws-card-title"><i class="bx bx-edit-alt"></i> Notes</span>
+                                        <select class="ws-notes-select" id="notes-select"
+                                            title="Single click to select, double tap to rename"
+                                            aria-label="Select saved note">
+                                            <!-- Dynamically populated -->
+                                        </select>
+                                        <input type="text" class="ws-notes-rename-input" id="notes-rename-input"
+                                            style="display: none;" placeholder="Note title..." aria-label="Rename note">
+                                    </div>
+                                    <div class="ws-header-actions">
+                                        <button class="btn-icon ws-btn-sm" id="note-add-btn" title="Add new note"
+                                            aria-label="Add new note">
+                                            <i class="bx bx-plus"></i>
+                                        </button>
+                                        <button class="btn-icon ws-btn-sm" id="note-delete-btn"
+                                            title="Delete current note" aria-label="Delete current note">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <textarea class="ws-notepad-area" id="notepad-area"
                                     placeholder="Start typing your notes here..." aria-label="Notepad"
                                     spellcheck="false"></textarea>
                             </div>
 
-                            <!-- Task Adder Card -->
-                            <div class="ws-card ws-task-adder-card">
+                            <!-- Task Schedule Table Card (Replaces Task Adder) -->
+                            <div class="ws-card ws-schedule-card">
                                 <div class="ws-card-header">
-                                    <span class="ws-card-title"><i class="bx bx-plus-circle"></i> Add Task</span>
+                                    <span class="ws-card-title"><i class="bx bx-calendar-event"></i> Task
+                                        Schedule</span>
+                                    <div class="ws-header-actions">
+                                        <div class="ws-schedule-clock" id="schedule-clock"
+                                            title="Philippine Time (GMT+8)">
+                                            <i class="bx bx-time-five"></i>
+                                            <span id="schedule-clock-time">--:--:--</span>
+                                            <span class="ws-clock-tz">PH (GMT+8)</span>
+                                        </div>
+                                        <button class="btn-icon ws-btn-sm" id="schedule-add-btn"
+                                            title="Add new task row" aria-label="Add task to schedule">
+                                            <i class="bx bx-plus"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <form class="ws-task-form" id="task-form" autocomplete="off">
-                                    <label class="ws-task-check-label" title="Mark as done immediately">
-                                        <input type="checkbox" id="task-done-initial" class="ws-task-checkbox">
-                                    </label>
-                                    <input type="text" class="ws-task-name-input" id="task-name-input"
-                                        placeholder="Task name..." aria-label="Task name" required>
-                                    <input type="time" class="ws-task-time-input" id="task-time-input"
-                                        aria-label="Task time">
-                                    <button type="submit" class="ws-task-add-btn" id="task-add-btn">
-                                        <i class="bx bx-plus"></i> Add
-                                    </button>
-                                </form>
+                                <div class="ws-table-container">
+                                    <table class="ws-schedule-table" id="schedule-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-drag"></th>
+                                                <th class="col-name">Task Name</th>
+                                                <th class="col-time">Time</th>
+                                                <th class="col-status">Status</th>
+                                                <th class="col-check">Done</th>
+                                                <th class="col-del"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="schedule-tbody">
+                                            <!-- Rows populated by script.js -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
 
                         </div>
@@ -211,14 +246,13 @@
                             <div class="ws-card ws-tasks-card">
                                 <div class="ws-card-header">
                                     <span class="ws-card-title"><i class="bx bx-check-square"></i> Tasks</span>
-                                    <span class="ws-task-count" id="task-count">0 tasks</span>
+                                    <button class="btn-icon ws-btn-sm" id="quick-task-add-btn" title="Add task item"
+                                        aria-label="Add task item">
+                                        <i class="bx bx-plus"></i>
+                                    </button>
                                 </div>
-                                <ul class="ws-task-list" id="task-list">
-                                    <!-- Tasks populated by script.js -->
-                                    <li class="ws-task-empty" id="task-empty-state">
-                                        <i class="bx bx-inbox"></i>
-                                        <span>No tasks yet. Add one!</span>
-                                    </li>
+                                <ul class="ws-quick-list" id="quick-task-list">
+                                    <!-- Items populated by script.js -->
                                 </ul>
                             </div>
 
