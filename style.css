@@ -1123,6 +1123,17 @@ body.sidebar-collapsed .workspace-header::after {
     background: var(--color-primary-light);
 }
 
+/* Clock format toggle has text, needs a bit more width */
+.ws-clock-fmt-btn {
+    width: auto;
+    min-width: 34px;
+    padding: 0 0.45rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
 .ws-notes-select {
     background: var(--color-bg-subtle);
     color: var(--color-text-main);

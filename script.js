@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             timerAlarmOn = !timerAlarmOn;
             timerAlarmBtn.classList.toggle('alarm-active', timerAlarmOn);
             timerAlarmBtn.title = timerAlarmOn ? 'Alarm On — click to disable' : 'Alarm Off';
-            timerAlarmBtn.querySelector('i').className = timerAlarmOn ? 'bx bx-bell' : 'bx bx-bell-off';
+            timerAlarmBtn.querySelector('i').className = timerAlarmOn ? 'bx bx-bell' : 'bx bx-bell-slash';
         });
     }
 
@@ -726,25 +726,44 @@ document.addEventListener('DOMContentLoaded', () => {
     renderQuickTasks();
 
     /* =========================================================
-       7. LIVE PHILIPPINE TIME CLOCK (GMT+8)
+       7. LIVE PHILIPPINE TIME CLOCK (GMT+8) + 12h/24h TOGGLE
        ========================================================= */
-    const clockTimeEl = document.getElementById('schedule-clock-time');
+    const clockTimeEl    = document.getElementById('schedule-clock-time');
+    const clockFmtToggle = document.getElementById('clock-fmt-toggle');
+    const clockFmtLabel  = document.getElementById('clock-fmt-label');
+
+    // Persist format preference; default = 24h
+    let clockIs12h = localStorage.getItem('ws-clock-12h') === 'true';
+
+    function updateClockFmtLabel() {
+        if (!clockFmtLabel) return;
+        clockFmtLabel.textContent = clockIs12h ? '12h' : '24h';
+    }
 
     function updateScheduleClock() {
         if (!clockTimeEl) return;
         const now = new Date();
-        // Use Intl to get exact PH time (Asia/Manila = GMT+8)
         const timeStr = now.toLocaleTimeString('en-PH', {
             timeZone: 'Asia/Manila',
-            hour: '2-digit',
+            hour:   '2-digit',
             minute: '2-digit',
             second: '2-digit',
-            hour12: false
+            hour12: clockIs12h
         });
         clockTimeEl.textContent = timeStr;
     }
 
-    // Run immediately, then every second
+    if (clockFmtToggle) {
+        clockFmtToggle.addEventListener('click', () => {
+            clockIs12h = !clockIs12h;
+            localStorage.setItem('ws-clock-12h', String(clockIs12h));
+            updateClockFmtLabel();
+            updateScheduleClock();   // refresh immediately on toggle
+        });
+    }
+
+    // Init label and start ticking
+    updateClockFmtLabel();
     updateScheduleClock();
     setInterval(updateScheduleClock, 1000);
 
