@@ -965,12 +965,14 @@ body.sidebar-collapsed .workspace-header::after {
     outline: none;
     padding: 0.1rem 0.1rem;
     -moz-appearance: textfield;
+    appearance: textfield;
     transition: border-color var(--transition-fast), color var(--transition-fast);
 }
 
 .timer-input::-webkit-inner-spin-button,
 .timer-input::-webkit-outer-spin-button {
     -webkit-appearance: none;
+    appearance: none;
 }
 
 .timer-input:focus {
