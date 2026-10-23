@@ -48,7 +48,7 @@
 
             <!-- Page Title -->
             <div class="header-title-group">
-                <h1>Workspace</h1>
+                <h1 id="page-title">Workspace</h1>
             </div>
         </div>
 
@@ -265,7 +265,210 @@
                     </div>
                 </section>
 
-                <!-- Other sections go below -->
+                <!-- =============================================
+                     CALENDAR SECTION (Google Calendar)
+                     ============================================= -->
+                <section id="calendar" class="ws-section" style="display: none;">
+                    <div class="ws-card ws-calendar-card">
+                        <div class="ws-card-header">
+                            <span class="ws-card-title"><i class="bx bx-calendar"></i> Google Calendar</span>
+                            <div class="ws-header-actions">
+                                <button class="btn-icon ws-btn-sm" id="cal-config-btn" title="Configure Calendar URL" aria-label="Configure Calendar URL">
+                                    <i class="bx bx-cog"></i>
+                                </button>
+                                <a id="cal-external-link" href="https://calendar.google.com" target="_blank" rel="noopener noreferrer" class="btn-icon ws-btn-sm" title="Open in Google Calendar" aria-label="Open in Google Calendar">
+                                    <i class="bx bx-link-external"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Config Panel: lets user paste their own Google Calendar ID or Embed Link -->
+                        <div class="ws-calendar-config" id="cal-config-panel" style="display: none;">
+                            <div class="ws-cal-config-inner">
+                                <label for="cal-url-input">Google Calendar ID or Embed URL:</label>
+                                <div class="ws-cal-input-group">
+                                    <input type="text" id="cal-url-input" class="ws-cal-text-input" placeholder="e.g. your_email@gmail.com or paste full embed link...">
+                                    <button class="btn btn-primary ws-btn-sm" id="cal-save-btn">Save</button>
+                                    <button class="btn btn-secondary ws-btn-sm" id="cal-reset-btn">Reset</button>
+                                </div>
+                                <p class="ws-cal-hint">💡 <strong>How to connect your calendar:</strong> Go to Google Calendar on desktop → Settings (gear) → select your calendar → check <em>"Make available to public"</em> (or sign in to Google in this browser) → copy the <em>Calendar ID</em> or <em>Public URL</em>.</p>
+                            </div>
+                        </div>
+
+                        <!-- Calendar iframe container -->
+                        <div class="ws-calendar-frame-wrap">
+                            <iframe id="google-calendar-iframe"
+                                src="https://calendar.google.com/calendar/embed?src=en.philippines%23holiday%40group.v.calendar.google.com&ctz=Asia%2FManila&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0"
+                                frameborder="0" scrolling="no" aria-label="Google Calendar">
+                            </iframe>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =============================================
+                     PROJECT MANAGER SECTION
+                     ============================================= -->
+                <section id="project-manager" class="ws-section" style="display: none;">
+                    <div class="pm-container">
+
+                        <!-- Main Explorer Area -->
+                        <div class="pm-main">
+                            <!-- Explorer Toolbar -->
+                            <div class="ws-card pm-toolbar-card">
+                                <div class="pm-toolbar-left">
+                                    <div class="pm-search-box">
+                                        <i class="bx bx-search"></i>
+                                        <input type="text" id="pm-search-input" placeholder="Search projects by title, description, or tag...">
+                                        <button type="button" class="pm-search-clear" id="pm-search-clear" style="display:none;" title="Clear search">
+                                            <i class="bx bx-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="pm-toolbar-right">
+                                    <!-- View Switcher (Like File Explorer: Large Cards, Tiles, List) -->
+                                    <div class="pm-view-switcher" role="group" aria-label="Explorer View Mode">
+                                        <button type="button" class="pm-view-btn active" data-view="cards" title="Large Cards View" aria-label="Large Cards View">
+                                            <i class="bx bx-grid-alt"></i>
+                                            <span>Cards</span>
+                                        </button>
+                                        <button type="button" class="pm-view-btn" data-view="tiles" title="Tiles View" aria-label="Tiles View">
+                                            <i class="bx bx-grid-horizontal"></i>
+                                            <span>Tiles</span>
+                                        </button>
+                                        <button type="button" class="pm-view-btn" data-view="list" title="List View" aria-label="List View">
+                                            <i class="bx bx-list-ul"></i>
+                                            <span>List</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Add New Project Button -->
+                                    <button type="button" class="btn btn-primary pm-add-btn" id="pm-add-btn" title="Add a new project">
+                                        <i class="bx bx-plus"></i>
+                                        <span>New Project</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Explorer Content Area -->
+                            <div class="ws-card pm-content-card">
+                                <div class="pm-status-bar">
+                                    <span id="pm-count-indicator">Showing 0 projects</span>
+                                    <div class="pm-active-filters" id="pm-active-filters"></div>
+                                </div>
+
+                                <!-- Dynamic Projects View Container -->
+                                <div class="pm-projects-view view-cards" id="pm-projects-container">
+                                    <!-- Project cards/tiles/rows rendered here by script.js -->
+                                </div>
+
+                                <!-- Empty Search/Filter State -->
+                                <div class="pm-empty-state" id="pm-empty-state" style="display: none;">
+                                    <i class="bx bx-folder-open"></i>
+                                    <h3>No projects match your filter</h3>
+                                    <p>Try resetting the search or category filters, or create a new project.</p>
+                                    <button type="button" class="btn btn-primary ws-btn-sm" id="pm-empty-add-btn">
+                                        <i class="bx bx-plus"></i> Add Project
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Filter Sidebar -->
+                        <aside class="pm-sidebar">
+                            <div class="ws-card pm-filter-card">
+                                <div class="ws-card-header">
+                                    <span class="ws-card-title"><i class="bx bx-filter-alt"></i> Filters</span>
+                                    <div class="ws-header-actions">
+                                        <button type="button" class="btn-icon ws-btn-sm" id="pm-sidebar-add-btn" title="Add New Project" aria-label="Add New Project">
+                                            <i class="bx bx-plus"></i>
+                                        </button>
+                                        <button type="button" class="btn-icon ws-btn-sm" id="pm-reset-filters-btn" title="Reset all filters" style="display: none;">
+                                            <i class="bx bx-reset"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Status Filters -->
+                                <div class="pm-filter-group">
+                                    <span class="pm-filter-heading">Status</span>
+                                    <ul class="pm-filter-list" id="pm-status-filter-list">
+                                        <!-- Rendered dynamically: All, In Progress, Completed, etc. -->
+                                    </ul>
+                                </div>
+
+                                <div class="pm-divider"></div>
+
+                                <!-- Tag Filters -->
+                                <div class="pm-filter-group">
+                                    <span class="pm-filter-heading">Categories & Tags</span>
+                                    <ul class="pm-filter-list" id="pm-tags-filter-list">
+                                        <!-- Rendered dynamically -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </aside>
+
+                    </div>
+                </section>
+
+                <!-- =============================================
+                     MODAL: ADD / EDIT PROJECT
+                     ============================================= -->
+                <div class="pm-modal-overlay" id="pm-modal" style="display: none;">
+                    <div class="pm-modal-dialog">
+                        <div class="pm-modal-header">
+                            <h3 id="pm-modal-title"><i class="bx bx-folder-plus"></i> New Project</h3>
+                            <button type="button" class="btn-icon ws-btn-sm" id="pm-modal-close-btn" title="Close modal" aria-label="Close modal">
+                                <i class="bx bx-x"></i>
+                            </button>
+                        </div>
+                        <form id="pm-project-form" class="pm-modal-body" novalidate>
+                            <input type="hidden" id="pm-form-id">
+
+                            <div class="form-group">
+                                <label for="pm-form-title">Project Title *</label>
+                                <input type="text" id="pm-form-title" class="form-control" placeholder="e.g. Japanese Learning Website" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="pm-form-link">Project Link or Path</label>
+                                <input type="text" id="pm-form-link" class="form-control" placeholder="e.g. ../japanese-language-website/index.html or https://...">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="pm-form-image">Image URL / Preview Thumbnail</label>
+                                <input type="text" id="pm-form-image" class="form-control" placeholder="Paste image URL (leave empty for custom generated gradient)">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group" style="flex: 1;">
+                                    <label for="pm-form-status">Status</label>
+                                    <select id="pm-form-status" class="form-control">
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Planned">Planned</option>
+                                        <option value="On Hold">On Hold</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex: 1.5;">
+                                    <label for="pm-form-tags">Tags (comma separated)</label>
+                                    <input type="text" id="pm-form-tags" class="form-control" placeholder="e.g. Website, JavaScript, Front-end">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="pm-form-desc">Description</label>
+                                <textarea id="pm-form-desc" class="form-control" rows="3" placeholder="Brief summary of what this project does..."></textarea>
+                            </div>
+
+                            <div class="pm-modal-footer">
+                                <button type="button" class="btn btn-secondary" id="pm-modal-cancel-btn">Cancel</button>
+                                <button type="submit" class="btn btn-primary" id="pm-modal-save-btn">Save Project</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
             </div>
         </main>

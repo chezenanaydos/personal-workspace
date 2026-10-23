@@ -28,13 +28,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* =========================================================
-       2. NAV ACTIVE LINK SWITCHING
+       2. NAV ACTIVE LINK SWITCHING & SECTION ROUTING
        ========================================================= */
-    const navLinks = document.querySelectorAll('.navigation-buttons a');
+    const navLinks    = document.querySelectorAll('.navigation-buttons a');
+    const sections    = document.querySelectorAll('.ws-section');
+    const pageTitleEl = document.getElementById('page-title');
+
     navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
+        link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href') || '';
+            if (href.startsWith('#')) {
+                const targetId = href.substring(1);
+                // Case-insensitive match for section id (e.g. Workspace vs workspace, calendar)
+                const targetSec = Array.from(sections).find(s => s.id.toLowerCase() === targetId.toLowerCase());
+
+                if (targetSec) {
+                    e.preventDefault();
+
+                    // Switch active class
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+
+                    // Show target section, hide others
+                    sections.forEach(s => s.style.display = 'none');
+                    targetSec.style.display = 'block';
+
+                    // Update header title text
+                    const labelSpan = link.querySelector('span');
+                    if (pageTitleEl && labelSpan) {
+                        pageTitleEl.textContent = labelSpan.textContent.trim();
+                    }
+                }
+            }
         });
     });
 
@@ -766,6 +791,700 @@ document.addEventListener('DOMContentLoaded', () => {
     updateClockFmtLabel();
     updateScheduleClock();
     setInterval(updateScheduleClock, 1000);
+
+    /* =========================================================
+       6. GOOGLE CALENDAR COMPONENT
+       ========================================================= */
+    const calConfigBtn     = document.getElementById('cal-config-btn');
+    const calConfigPanel   = document.getElementById('cal-config-panel');
+    const calUrlInput      = document.getElementById('cal-url-input');
+    const calSaveBtn       = document.getElementById('cal-save-btn');
+    const calResetBtn      = document.getElementById('cal-reset-btn');
+    const calIframe        = document.getElementById('google-calendar-iframe');
+    const calExternalLink  = document.getElementById('cal-external-link');
+
+    const DEFAULT_CAL_URL = 'https://calendar.google.com/calendar/embed?src=en.philippines%23holiday%40group.v.calendar.google.com&ctz=Asia%2FManila&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0';
+
+    function buildEmbedUrl(input) {
+        if (!input) return DEFAULT_CAL_URL;
+        let trimmed = input.trim();
+
+        // If user pasted an iframe tag, extract the src attribute
+        const iframeSrcMatch = trimmed.match(/src=["']([^"']+)["']/i);
+        if (iframeSrcMatch) {
+            trimmed = iframeSrcMatch[1];
+        }
+
+        // If it's already an embed URL, return it
+        if (trimmed.includes('calendar.google.com/calendar/embed')) {
+            return trimmed;
+        }
+
+        // If it's an email or calendar ID, build a clean embed URL
+        const calId = encodeURIComponent(trimmed);
+        return `https://calendar.google.com/calendar/embed?src=${calId}&ctz=Asia%2FManila&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=1&showCalendars=0`;
+    }
+
+    function loadSavedCalendar() {
+        if (!calIframe) return;
+        const savedUrl = localStorage.getItem('zen_custom_google_cal');
+        if (savedUrl) {
+            calIframe.src = savedUrl;
+            if (calUrlInput) calUrlInput.value = savedUrl;
+        }
+    }
+
+    if (calConfigBtn && calConfigPanel) {
+        calConfigBtn.addEventListener('click', () => {
+            const isHidden = calConfigPanel.style.display === 'none';
+            calConfigPanel.style.display = isHidden ? 'block' : 'none';
+            if (isHidden && calUrlInput) calUrlInput.focus();
+        });
+    }
+
+    if (calSaveBtn && calUrlInput && calIframe) {
+        calSaveBtn.addEventListener('click', () => {
+            const val = calUrlInput.value.trim();
+            if (!val) {
+                alert('Please enter a Google Calendar email/ID or embed URL.');
+                return;
+            }
+            const finalUrl = buildEmbedUrl(val);
+            calIframe.src = finalUrl;
+            localStorage.setItem('zen_custom_google_cal', finalUrl);
+            calConfigPanel.style.display = 'none';
+        });
+    }
+
+    if (calResetBtn && calIframe) {
+        calResetBtn.addEventListener('click', () => {
+            calIframe.src = DEFAULT_CAL_URL;
+            if (calUrlInput) calUrlInput.value = '';
+            localStorage.removeItem('zen_custom_google_cal');
+            calConfigPanel.style.display = 'none';
+        });
+    }
+
+    loadSavedCalendar();
+
+    /* =========================================================
+       7. PROJECT MANAGER COMPONENT
+       ========================================================= */
+    const pmContainer         = document.getElementById('pm-projects-container');
+    const pmSearchInput       = document.getElementById('pm-search-input');
+    const pmSearchClear       = document.getElementById('pm-search-clear');
+    const pmViewButtons       = document.querySelectorAll('.pm-view-btn');
+    const pmCountIndicator    = document.getElementById('pm-count-indicator');
+    const pmActiveFiltersEl   = document.getElementById('pm-active-filters');
+    const pmEmptyState        = document.getElementById('pm-empty-state');
+    const pmStatusFilterList  = document.getElementById('pm-status-filter-list');
+    const pmTagsFilterList    = document.getElementById('pm-tags-filter-list');
+    const pmResetFiltersBtn   = document.getElementById('pm-reset-filters-btn');
+    const pmAddBtn            = document.getElementById('pm-add-btn');
+    const pmSidebarAddBtn     = document.getElementById('pm-sidebar-add-btn');
+    const pmEmptyAddBtn       = document.getElementById('pm-empty-add-btn');
+
+    // Modal elements
+    const pmModal             = document.getElementById('pm-modal');
+    const pmModalCloseBtn     = document.getElementById('pm-modal-close-btn');
+    const pmModalCancelBtn    = document.getElementById('pm-modal-cancel-btn');
+    const pmModalTitle        = document.getElementById('pm-modal-title');
+    const pmForm              = document.getElementById('pm-project-form');
+    const pmFormId            = document.getElementById('pm-form-id');
+    const pmFormTitle         = document.getElementById('pm-form-title');
+    const pmFormLink          = document.getElementById('pm-form-link');
+    const pmFormImage         = document.getElementById('pm-form-image');
+    const pmFormStatus        = document.getElementById('pm-form-status');
+    const pmFormTags          = document.getElementById('pm-form-tags');
+    const pmFormDesc          = document.getElementById('pm-form-desc');
+
+    // Default Seed Projects (loaded if localStorage is empty)
+    const SEED_PROJECTS = [
+        {
+            id: 'proj_1',
+            title: 'Japanese Language Learning',
+            link: '../japanese-language-website/index.html',
+            image: '',
+            gradient: 'linear-gradient(135deg, #c43c22, #ea580c)',
+            status: 'In Progress',
+            tags: ['Website', 'Japanese', 'Education', 'Front-end'],
+            desc: 'Interactive platform for learning Hiragana, Katakana, JLPT N5 Kanji, and essential everyday Japanese phrases.'
+        },
+        {
+            id: 'proj_2',
+            title: 'Personal Developer Portfolio',
+            link: '../personal-portfolio/index.html',
+            image: '',
+            gradient: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+            status: 'Completed',
+            tags: ['Portfolio', 'Website', 'Showcase'],
+            desc: 'Clean personal website showcasing web design work, interactive components, projects, and contact information.'
+        },
+        {
+            id: 'proj_3',
+            title: 'Experimental Testing Sandbox',
+            link: '../experimental-website/index.html',
+            image: '',
+            gradient: 'linear-gradient(135deg, #0d9488, #0284c7)',
+            status: 'In Progress',
+            tags: ['Experiments', 'Login', 'UI Components', 'HTML/CSS'],
+            desc: 'Experimental testing sandbox featuring modern authentication login card with validation and password toggles.'
+        },
+        {
+            id: 'proj_4',
+            title: 'Online Dictionary Website',
+            link: '../dictionary-website/index.html',
+            image: '',
+            gradient: 'linear-gradient(135deg, #d97706, #b45309)',
+            status: 'In Progress',
+            tags: ['Website', 'Tools', 'Dictionary'],
+            desc: 'Searchable dictionary and vocabulary tool with instant definitions and lexical examples.'
+        },
+        {
+            id: 'proj_5',
+            title: 'National News Page',
+            link: '../national-news-page/index.html',
+            image: '',
+            gradient: 'linear-gradient(135deg, #e11d48, #be123c)',
+            status: 'Completed',
+            tags: ['Website', 'News', 'Layout'],
+            desc: 'Editorial news page layout with breaking news ticker, featured articles, and responsive story grid.'
+        },
+        {
+            id: 'proj_6',
+            title: 'School Academic Portal',
+            link: '../school-portal/index.html',
+            image: '',
+            gradient: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+            status: 'In Progress',
+            tags: ['Portal', 'Education', 'Web App'],
+            desc: 'Academic portal for students and faculty with schedules, course modules, and announcements.'
+        },
+        {
+            id: 'proj_7',
+            title: 'Custom Video Player',
+            link: '../video-player/index.html',
+            image: '',
+            gradient: 'linear-gradient(135deg, #7c3aed, #db2777)',
+            status: 'Completed',
+            tags: ['Media', 'Player', 'JavaScript'],
+            desc: 'Custom web video playback interface featuring playback rate, scrubber, fullscreen, and playlist support.'
+        }
+    ];
+
+    // State
+    let projects     = loadProjects();
+    let currentView  = localStorage.getItem('zen_pm_view') || 'cards';
+    let searchQuery  = '';
+    let filterStatus = 'All';
+    let filterTag    = 'All';
+
+    // Gradients for projects without custom image
+    const GRADIENT_PALETTE = [
+        'linear-gradient(135deg, #4f46e5, #7c3aed)',
+        'linear-gradient(135deg, #0d9488, #0284c7)',
+        'linear-gradient(135deg, #c43c22, #ea580c)',
+        'linear-gradient(135deg, #d97706, #b45309)',
+        'linear-gradient(135deg, #e11d48, #be123c)',
+        'linear-gradient(135deg, #059669, #0d9488)',
+        'linear-gradient(135deg, #7c3aed, #db2777)',
+        'linear-gradient(135deg, #3b82f6, #1d4ed8)'
+    ];
+
+    function loadProjects() {
+        try {
+            const raw = localStorage.getItem('zen_projects_data');
+            if (raw) return JSON.parse(raw);
+        } catch(e) {}
+        // Save initial seed projects
+        saveProjectsToStorage(SEED_PROJECTS);
+        return SEED_PROJECTS;
+    }
+
+    function saveProjectsToStorage(data) {
+        try {
+            localStorage.setItem('zen_projects_data', JSON.stringify(data));
+        } catch(e) {}
+    }
+
+    function getRandomGradient() {
+        return GRADIENT_PALETTE[Math.floor(Math.random() * GRADIENT_PALETTE.length)];
+    }
+
+    function getStatusClass(status) {
+        const s = (status || '').toLowerCase();
+        if (s.includes('completed')) return 'completed';
+        if (s.includes('progress')) return 'in-progress';
+        if (s.includes('plan') || s.includes('idea')) return 'planned';
+        if (s.includes('hold')) return 'on-hold';
+        return 'in-progress';
+    }
+
+    // --- Filter & Search Logic ---
+    function getFilteredProjects() {
+        return projects.filter(p => {
+            // Search query
+            const q = searchQuery.toLowerCase().trim();
+            const matchesSearch = !q || 
+                p.title.toLowerCase().includes(q) ||
+                (p.desc && p.desc.toLowerCase().includes(q)) ||
+                (p.tags && p.tags.some(t => t.toLowerCase().includes(q)));
+
+            // Status filter
+            const matchesStatus = (filterStatus === 'All') || (p.status === filterStatus);
+
+            // Tag filter
+            const matchesTag = (filterTag === 'All') || (p.tags && p.tags.includes(filterTag));
+
+            return matchesSearch && matchesStatus && matchesTag;
+        });
+    }
+
+    // --- Render Projects ---
+    function renderProjectManager() {
+        if (!pmContainer) return;
+
+        const filtered = getFilteredProjects();
+
+        // Update container view class
+        pmContainer.className = `pm-projects-view view-${currentView}`;
+
+        // View Switcher active button
+        pmViewButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-view') === currentView);
+        });
+
+        // Update count indicator
+        if (pmCountIndicator) {
+            pmCountIndicator.textContent = `Showing ${filtered.length} of ${projects.length} project${projects.length === 1 ? '' : 's'}`;
+        }
+
+        // Active filters pills
+        if (pmActiveFiltersEl) {
+            let pillsHtml = '';
+            if (filterStatus !== 'All') {
+                pillsHtml += `<span class="pm-filter-pill-active">Status: ${escapeHtml(filterStatus)} <i class="bx bx-x" onclick="window.pmClearStatusFilter()"></i></span>`;
+            }
+            if (filterTag !== 'All') {
+                pillsHtml += `<span class="pm-filter-pill-active">Tag: ${escapeHtml(filterTag)} <i class="bx bx-x" onclick="window.pmClearTagFilter()"></i></span>`;
+            }
+            if (searchQuery) {
+                pillsHtml += `<span class="pm-filter-pill-active">Search: "${escapeHtml(searchQuery)}" <i class="bx bx-x" onclick="window.pmClearSearch()"></i></span>`;
+            }
+            pmActiveFiltersEl.innerHTML = pillsHtml;
+        }
+
+        // Reset filters button visibility
+        const hasFilters = (filterStatus !== 'All' || filterTag !== 'All' || searchQuery !== '');
+        if (pmResetFiltersBtn) {
+            pmResetFiltersBtn.style.display = hasFilters ? 'inline-flex' : 'none';
+        }
+
+        // Empty state
+        if (filtered.length === 0) {
+            pmContainer.style.display = 'none';
+            if (pmEmptyState) pmEmptyState.style.display = 'flex';
+        } else {
+            pmContainer.style.display = (currentView === 'list') ? 'flex' : 'grid';
+            if (pmEmptyState) pmEmptyState.style.display = 'none';
+
+            // Generate HTML based on view
+            pmContainer.innerHTML = filtered.map(p => renderProjectItem(p, currentView)).join('');
+        }
+
+        // Render sidebars
+        renderFilterSidebars();
+    }
+
+    function renderProjectItem(p, view) {
+        const statusClass = getStatusClass(p.status);
+        const bannerStyle = p.image 
+            ? `background-image: url('${escapeHtml(p.image)}');` 
+            : `background: ${p.gradient || 'var(--color-primary)'};`;
+
+        const placeholderIcon = p.image ? '' : `<i class="bx bx-code-alt pm-card-placeholder-icon"></i>`;
+        const linkHref = p.link ? escapeHtml(p.link) : '#';
+
+        const tagsHtml = (p.tags && p.tags.length)
+            ? p.tags.map(t => `<span class="pm-tag-pill" onclick="window.pmSelectTag('${escapeHtml(t)}')">${escapeHtml(t)}</span>`).join('')
+            : '';
+
+        if (view === 'list') {
+            return `
+                <div class="pm-card-item" data-id="${p.id}">
+                    <div class="pm-card-banner" style="${bannerStyle}">
+                        ${placeholderIcon}
+                    </div>
+                    <div class="pm-card-body">
+                        <div class="pm-card-title">
+                            <a href="${linkHref}" target="_blank" rel="noopener noreferrer">${escapeHtml(p.title)}</a>
+                        </div>
+                        <p class="pm-card-desc">${escapeHtml(p.desc || 'No description provided.')}</p>
+                    </div>
+                    <div class="pm-card-tags">
+                        ${tagsHtml}
+                    </div>
+                    <div class="pm-list-status">
+                        <span class="pm-status-badge ${statusClass}">${escapeHtml(p.status || 'Active')}</span>
+                    </div>
+                    <div class="pm-card-footer">
+                        <a href="${linkHref}" target="_blank" rel="noopener noreferrer" class="btn-icon ws-btn-sm" title="Open Project">
+                            <i class="bx bx-link-external"></i>
+                        </a>
+                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmEditProject('${p.id}')" title="Edit Project">
+                            <i class="bx bx-edit"></i>
+                        </button>
+                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmDeleteProject('${p.id}')" title="Delete Project">
+                            <i class="bx bx-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (view === 'tiles') {
+            return `
+                <div class="pm-card-item" data-id="${p.id}">
+                    <div class="pm-card-banner" style="${bannerStyle}">
+                        ${placeholderIcon}
+                    </div>
+                    <div class="pm-card-body">
+                        <div class="pm-card-title">
+                            <a href="${linkHref}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(p.title)}">${escapeHtml(p.title)}</a>
+                        </div>
+                        <p class="pm-card-desc">${escapeHtml(p.desc || 'No description provided.')}</p>
+                        <div class="pm-card-tags">
+                            ${tagsHtml}
+                        </div>
+                    </div>
+                    <div class="pm-card-footer">
+                        <a href="${linkHref}" target="_blank" rel="noopener noreferrer" class="btn-icon ws-btn-sm" title="Open Project">
+                            <i class="bx bx-link-external"></i>
+                        </a>
+                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmEditProject('${p.id}')" title="Edit Project">
+                            <i class="bx bx-edit"></i>
+                        </button>
+                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmDeleteProject('${p.id}')" title="Delete Project">
+                            <i class="bx bx-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Default: Cards View
+        return `
+            <div class="pm-card-item" data-id="${p.id}">
+                <div class="pm-card-banner" style="${bannerStyle}">
+                    ${placeholderIcon}
+                    <span class="pm-status-badge ${statusClass}">${escapeHtml(p.status || 'Active')}</span>
+                </div>
+                <div class="pm-card-body">
+                    <h4 class="pm-card-title">
+                        <a href="${linkHref}" target="_blank" rel="noopener noreferrer">${escapeHtml(p.title)}</a>
+                    </h4>
+                    <p class="pm-card-desc">${escapeHtml(p.desc || 'No description provided.')}</p>
+                    <div class="pm-card-tags">
+                        ${tagsHtml}
+                    </div>
+                </div>
+                <div class="pm-card-footer">
+                    <a href="${linkHref}" target="_blank" rel="noopener noreferrer" class="pm-btn-open">
+                        <span>Open</span>
+                        <i class="bx bx-link-external"></i>
+                    </a>
+                    <div class="pm-card-actions">
+                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmEditProject('${p.id}')" title="Edit Project">
+                            <i class="bx bx-edit"></i>
+                        </button>
+                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmDeleteProject('${p.id}')" title="Delete Project">
+                            <i class="bx bx-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // --- Render Filter Sidebar (Status & Tags with counts) ---
+    function renderFilterSidebars() {
+        // Status Counts
+        const statusMap = { 'All': projects.length };
+        ['In Progress', 'Completed', 'Planned', 'On Hold'].forEach(st => {
+            statusMap[st] = projects.filter(p => p.status === st).length;
+        });
+
+        if (pmStatusFilterList) {
+            pmStatusFilterList.innerHTML = Object.keys(statusMap).map(statusKey => {
+                const count = statusMap[statusKey] || 0;
+                const isActive = (filterStatus === statusKey);
+                return `
+                    <li class="pm-filter-item ${isActive ? 'active' : ''}" onclick="window.pmSelectStatus('${escapeHtml(statusKey)}')">
+                        <span>${escapeHtml(statusKey)}</span>
+                        <span class="pm-filter-badge">${count}</span>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        // Tag Counts
+        const tagMap = {};
+        projects.forEach(p => {
+            if (p.tags && Array.isArray(p.tags)) {
+                p.tags.forEach(t => {
+                    const tagClean = t.trim();
+                    if (tagClean) {
+                        tagMap[tagClean] = (tagMap[tagClean] || 0) + 1;
+                    }
+                });
+            }
+        });
+
+        if (pmTagsFilterList) {
+            const sortedTags = Object.keys(tagMap).sort((a, b) => tagMap[b] - tagMap[a]);
+            let tagsListHtml = `
+                <li class="pm-filter-item ${filterTag === 'All' ? 'active' : ''}" onclick="window.pmSelectTag('All')">
+                    <span>All Tags</span>
+                    <span class="pm-filter-badge">${projects.length}</span>
+                </li>
+            `;
+
+            tagsListHtml += sortedTags.map(tagKey => {
+                const count = tagMap[tagKey];
+                const isActive = (filterTag === tagKey);
+                return `
+                    <li class="pm-filter-item ${isActive ? 'active' : ''}" onclick="window.pmSelectTag('${escapeHtml(tagKey)}')">
+                        <span>${escapeHtml(tagKey)}</span>
+                        <span class="pm-filter-badge">${count}</span>
+                    </li>
+                `;
+            }).join('');
+
+            pmTagsFilterList.innerHTML = tagsListHtml;
+        }
+    }
+
+    // --- Global Click Handlers for Project Manager ---
+    window.pmSelectStatus = function(status) {
+        filterStatus = status;
+        renderProjectManager();
+    };
+
+    window.pmSelectTag = function(tag) {
+        filterTag = tag;
+        renderProjectManager();
+    };
+
+    window.pmClearStatusFilter = function() {
+        filterStatus = 'All';
+        renderProjectManager();
+    };
+
+    window.pmClearTagFilter = function() {
+        filterTag = 'All';
+        renderProjectManager();
+    };
+
+    window.pmClearSearch = function() {
+        searchQuery = '';
+        if (pmSearchInput) pmSearchInput.value = '';
+        if (pmSearchClear) pmSearchClear.style.display = 'none';
+        renderProjectManager();
+    };
+
+    window.pmEditProject = function(id) {
+        const project = projects.find(p => p.id === id);
+        if (!project) return;
+
+        pmFormId.value = project.id;
+        pmFormTitle.value = project.title || '';
+        pmFormLink.value = project.link || '';
+        pmFormImage.value = project.image || '';
+        pmFormStatus.value = project.status || 'In Progress';
+        pmFormTags.value = (project.tags || []).join(', ');
+        pmFormDesc.value = project.desc || '';
+
+        if (pmModalTitle) {
+            pmModalTitle.innerHTML = `<i class="bx bx-edit"></i> Edit Project`;
+        }
+
+        openModal();
+    };
+
+    window.pmDeleteProject = function(id) {
+        const project = projects.find(p => p.id === id);
+        if (!project) return;
+
+        if (confirm(`Are you sure you want to delete "${project.title}"?`)) {
+            projects = projects.filter(p => p.id !== id);
+            saveProjectsToStorage(projects);
+            renderProjectManager();
+        }
+    };
+
+    // --- Search Input Events ---
+    if (pmSearchInput) {
+        pmSearchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            if (pmSearchClear) {
+                pmSearchClear.style.display = searchQuery ? 'flex' : 'none';
+            }
+            renderProjectManager();
+        });
+    }
+
+    if (pmSearchClear) {
+        pmSearchClear.addEventListener('click', window.pmClearSearch);
+    }
+
+    // --- View Mode Buttons ---
+    pmViewButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const view = btn.getAttribute('data-view');
+            if (view) {
+                currentView = view;
+                localStorage.setItem('zen_pm_view', view);
+                renderProjectManager();
+            }
+        });
+    });
+
+    // --- Reset Filters Button ---
+    if (pmResetFiltersBtn) {
+        pmResetFiltersBtn.addEventListener('click', () => {
+            searchQuery = '';
+            filterStatus = 'All';
+            filterTag = 'All';
+            if (pmSearchInput) pmSearchInput.value = '';
+            if (pmSearchClear) pmSearchClear.style.display = 'none';
+            renderProjectManager();
+        });
+    }
+
+    // --- Modal Management ---
+    function openModal() {
+        if (pmModal) {
+            pmModal.style.display = 'flex';
+            setTimeout(() => pmFormTitle.focus(), 60);
+        }
+    }
+
+    function closeModal() {
+        if (pmModal) pmModal.style.display = 'none';
+        if (pmForm) pmForm.reset();
+        pmFormId.value = '';
+    }
+
+    if (pmAddBtn) {
+        pmAddBtn.addEventListener('click', () => {
+            if (pmForm) pmForm.reset();
+            pmFormId.value = '';
+            if (pmModalTitle) {
+                pmModalTitle.innerHTML = `<i class="bx bx-folder-plus"></i> New Project`;
+            }
+            openModal();
+        });
+    }
+
+    if (pmSidebarAddBtn) {
+        pmSidebarAddBtn.addEventListener('click', () => {
+            if (pmForm) pmForm.reset();
+            pmFormId.value = '';
+            if (pmModalTitle) {
+                pmModalTitle.innerHTML = `<i class="bx bx-folder-plus"></i> New Project`;
+            }
+            openModal();
+        });
+    }
+
+    if (pmEmptyAddBtn) {
+        pmEmptyAddBtn.addEventListener('click', () => {
+            if (pmForm) pmForm.reset();
+            pmFormId.value = '';
+            openModal();
+        });
+    }
+
+    if (pmModalCloseBtn) pmModalCloseBtn.addEventListener('click', closeModal);
+    if (pmModalCancelBtn) pmModalCancelBtn.addEventListener('click', closeModal);
+
+    if (pmModal) {
+        pmModal.addEventListener('click', (e) => {
+            if (e.target === pmModal) closeModal();
+        });
+    }
+
+    // Form Submission (Add or Update)
+    if (pmForm) {
+        pmForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const title = pmFormTitle.value.trim();
+            if (!title) {
+                alert('Please enter a project title.');
+                pmFormTitle.focus();
+                return;
+            }
+
+            const id = pmFormId.value.trim();
+            const link = pmFormLink.value.trim();
+            const image = pmFormImage.value.trim();
+            const status = pmFormStatus.value;
+            const desc = pmFormDesc.value.trim();
+
+            // Parse tags
+            const tags = pmFormTags.value
+                .split(',')
+                .map(t => t.trim())
+                .filter(t => t.length > 0);
+
+            if (id) {
+                // Editing existing project
+                const index = projects.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    projects[index] = {
+                        ...projects[index],
+                        title,
+                        link,
+                        image,
+                        status,
+                        tags,
+                        desc
+                    };
+                }
+            } else {
+                // Creating new project
+                const newProject = {
+                    id: 'proj_' + Date.now(),
+                    title,
+                    link,
+                    image,
+                    gradient: getRandomGradient(),
+                    status,
+                    tags,
+                    desc
+                };
+                projects.unshift(newProject);
+            }
+
+            saveProjectsToStorage(projects);
+            closeModal();
+            renderProjectManager();
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // Initialize Project Manager
+    renderProjectManager();
 
 });
 
