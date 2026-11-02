@@ -108,9 +108,9 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#notepad">
-                            <i class="bx bx-edit-alt"></i>
-                            <span>Notepad</span>
+                        <a href="#day-planner">
+                            <i class="bx bx-sun"></i>
+                            <span>Day Planner</span>
                         </a>
                     </li>
                 </ul>
@@ -200,7 +200,7 @@
                                     spellcheck="false"></textarea>
                             </div>
 
-                            <!-- Task Schedule Table Card (Replaces Task Adder) -->
+                            <!-- Task Schedule Table Card -->
                             <div class="ws-card ws-schedule-card">
                                 <div class="ws-card-header">
                                     <span class="ws-card-title"><i class="bx bx-calendar-event"></i> Task
@@ -413,6 +413,173 @@
                 </section>
 
                 <!-- =============================================
+                     DAY PLANNER SECTION
+                     ============================================= -->
+                <section id="day-planner" class="ws-section" style="display: none;">
+                    <div class="dp-container">
+
+                        <!-- Top Day Planner Header Banner -->
+                        <div class="ws-card dp-header-card">
+                            <div class="dp-header-left">
+                                <div class="dp-greeting-row">
+                                    <span class="dp-sun-icon" id="dp-greeting-icon">☀️</span>
+                                    <h2 class="dp-greeting" id="dp-greeting">Good morning! Let's build your day.</h2>
+                                </div>
+                                <p class="dp-date-display" id="dp-date-display">Monday, November 2, 2026</p>
+                            </div>
+                            <div class="dp-header-actions">
+                                <button type="button" class="btn btn-secondary dp-btn" id="dp-template-btn" title="Load a recommended day template">
+                                    <i class="bx bx-copy-alt"></i> <span>Sample Template</span>
+                                </button>
+                                <button type="button" class="btn btn-secondary dp-btn" id="dp-reset-btn" title="Start a fresh day plan">
+                                    <i class="bx bx-refresh"></i> <span>Start Fresh Day</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Main Grid: Left 62% Timeline / Schedule, Right 38% Priorities + Habits + Scratchpad -->
+                        <div class="dp-grid">
+
+                            <!-- LEFT COLUMN: Time Blocks Timeline -->
+                            <div class="dp-col-schedule">
+                                <div class="ws-card dp-schedule-card">
+                                    <div class="ws-card-header">
+                                        <span class="ws-card-title"><i class="bx bx-time-five"></i> Daily Timeline &amp; Time Blocks</span>
+                                        <div class="dp-progress-wrap">
+                                            <span class="dp-progress-text" id="dp-progress-text">0 of 0 completed (0%)</span>
+                                            <div class="dp-progress-bar">
+                                                <div class="dp-progress-fill" id="dp-progress-fill" style="width: 0%;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filter tabs for day periods -->
+                                    <div class="dp-period-tabs" role="tablist">
+                                        <button type="button" class="dp-period-btn active" data-period="all">All Day</button>
+                                        <button type="button" class="dp-period-btn" data-period="morning">🌅 Morning</button>
+                                        <button type="button" class="dp-period-btn" data-period="afternoon">☀️ Afternoon</button>
+                                        <button type="button" class="dp-period-btn" data-period="evening">🌙 Evening</button>
+                                    </div>
+
+                                    <!-- Dynamic Time Blocks List -->
+                                    <div class="dp-timeline-list" id="dp-timeline-list">
+                                        <!-- Time blocks injected by script.js -->
+                                    </div>
+
+                                    <!-- Quick Add Time Block Bar -->
+                                    <form class="dp-quick-add-bar" id="dp-quick-add-form">
+                                        <div class="dp-add-time-group">
+                                            <i class="bx bx-time"></i>
+                                            <input type="text" class="dp-input" id="dp-input-time" placeholder="Time (e.g. 08:30 - 09:30)" required>
+                                        </div>
+                                        <div class="dp-add-task-group">
+                                            <input type="text" class="dp-input" id="dp-input-task" placeholder="What will you do?" required>
+                                        </div>
+                                        <select class="dp-select" id="dp-input-period" aria-label="Select period of day">
+                                            <option value="morning">🌅 Morning</option>
+                                            <option value="afternoon">☀️ Afternoon</option>
+                                            <option value="evening">🌙 Evening</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary dp-add-submit-btn">
+                                            <i class="bx bx-plus"></i> <span>Add Block</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- RIGHT COLUMN: The Big 3, Habits, Scratchpad -->
+                            <div class="dp-col-sidebar">
+
+                                <!-- Card 1: Today's Big 3 Priorities -->
+                                <div class="ws-card dp-card dp-big3-card">
+                                    <div class="ws-card-header">
+                                        <span class="ws-card-title"><i class="bx bx-target-lock"></i> Top 3 Priorities</span>
+                                        <span class="dp-badge-focus">Must-Win</span>
+                                    </div>
+                                    <p class="dp-card-intro">If you only achieve 3 things today, what must they be?</p>
+                                    <div class="dp-big3-list" id="dp-big3-list">
+                                        <!-- Injected by script.js -->
+                                    </div>
+                                </div>
+
+                                <!-- Card 2: Morning Routine & Daily Habits -->
+                                <div class="ws-card dp-card dp-habits-card">
+                                    <div class="ws-card-header">
+                                        <span class="ws-card-title"><i class="bx bx-check-circle"></i> Daily Habits &amp; Routine</span>
+                                        <button type="button" class="btn-icon ws-btn-sm" id="dp-add-habit-btn" title="Add a custom habit">
+                                            <i class="bx bx-plus"></i>
+                                        </button>
+                                    </div>
+                                    <div class="dp-habits-list" id="dp-habits-list">
+                                        <!-- Injected by script.js -->
+                                    </div>
+                                </div>
+
+                                <!-- Card 3: Daily Scratchpad -->
+                                <div class="ws-card dp-card dp-scratchpad-card">
+                                    <div class="ws-card-header">
+                                        <span class="ws-card-title"><i class="bx bx-notepad"></i> Day Scratchpad</span>
+                                        <span class="dp-autosave-indicator" id="dp-autosave-indicator"><i class="bx bx-check"></i> Auto-saved</span>
+                                    </div>
+                                    <textarea class="dp-scratchpad" id="dp-scratchpad" placeholder="Quick ideas, reminders, notes as your day unfolds..." rows="4"></textarea>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- =============================================
+                     MODAL: ENLARGED PROJECT DETAILS VIEW
+                     ============================================= -->
+                <div class="pm-modal-overlay" id="pm-details-modal" style="display: none;">
+                    <div class="pm-modal-dialog pm-details-dialog">
+                        <div class="pm-details-banner" id="pm-details-banner">
+                            <span class="pm-status-badge" id="pm-details-status">Active</span>
+                            <button type="button" class="pm-details-close-btn" id="pm-details-close-btn" title="Close" aria-label="Close">
+                                <i class="bx bx-x"></i>
+                            </button>
+                        </div>
+                        <div class="pm-details-content">
+                            <div class="pm-details-header">
+                                <h2 id="pm-details-title" class="pm-details-title">Project Title</h2>
+                                <div class="pm-details-tags" id="pm-details-tags"></div>
+                            </div>
+
+                            <div class="pm-details-section">
+                                <h4 class="pm-details-subtitle"><i class="bx bx-align-left"></i> Description</h4>
+                                <div class="pm-details-desc" id="pm-details-desc"></div>
+                            </div>
+
+                            <div class="pm-details-section" id="pm-details-link-section">
+                                <h4 class="pm-details-subtitle"><i class="bx bx-link"></i> Project Link / Path</h4>
+                                <div class="pm-details-link-box">
+                                    <i class="bx bx-globe"></i>
+                                    <a href="#" target="_blank" rel="noopener noreferrer" id="pm-details-link-url" class="pm-details-link-text"></a>
+                                </div>
+                            </div>
+
+                            <div class="pm-details-footer">
+                                <div class="pm-details-actions-left">
+                                    <button type="button" class="btn btn-secondary text-danger" id="pm-details-delete-btn" title="Delete this project">
+                                        <i class="bx bx-trash"></i> Delete
+                                    </button>
+                                </div>
+                                <div class="pm-details-actions-right">
+                                    <button type="button" class="btn btn-secondary" id="pm-details-edit-btn" title="Edit this project">
+                                        <i class="bx bx-edit"></i> Edit Project
+                                    </button>
+                                    <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary" id="pm-details-launch-btn">
+                                        <i class="bx bx-link-external"></i> Launch Project
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- =============================================
                      MODAL: ADD / EDIT PROJECT
                      ============================================= -->
                 <div class="pm-modal-overlay" id="pm-modal" style="display: none;">
@@ -437,8 +604,30 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="pm-form-image">Image URL / Preview Thumbnail</label>
-                                <input type="text" id="pm-form-image" class="form-control" placeholder="Paste image URL (leave empty for custom generated gradient)">
+                                <label>Project Image / Thumbnail</label>
+                                <!-- Drag and Drop Zone -->
+                                <div class="pm-image-dropzone" id="pm-image-dropzone" title="Drag & drop an image or click to choose">
+                                    <input type="file" id="pm-file-input" accept="image/*" style="display: none;">
+                                    
+                                    <div class="pm-dropzone-prompt" id="pm-dropzone-prompt">
+                                        <i class="bx bx-cloud-upload"></i>
+                                        <p><strong>Drag &amp; drop an image here</strong>, or <span class="pm-browse-link">browse</span></p>
+                                        <span class="pm-dropzone-hint">Supports PNG, JPG, WebP, GIF, SVG</span>
+                                    </div>
+
+                                    <div class="pm-dropzone-preview" id="pm-dropzone-preview" style="display: none;">
+                                        <img id="pm-preview-img" src="" alt="Thumbnail preview">
+                                        <button type="button" class="pm-preview-remove-btn" id="pm-preview-remove-btn" title="Remove image">
+                                            <i class="bx bx-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Image URL Input Row -->
+                                <div class="pm-image-url-row">
+                                    <span class="pm-url-label">Or paste image link / URL:</span>
+                                    <input type="text" id="pm-form-image" class="form-control" placeholder="e.g. https://images.unsplash.com/... or data:image...">
+                                </div>
                             </div>
 
                             <div class="form-row">

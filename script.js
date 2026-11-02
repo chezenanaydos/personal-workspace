@@ -199,193 +199,369 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* =========================================================
-       4. NOTEPAD — Multi-notes with Dropdown, Auto-naming, Inline Double-Tap Rename, Add & Delete
+       4. DAY PLANNER — Daily Intentions, Time Blocks, Habits & Scratchpad
        ========================================================= */
-    const notesSelect      = document.getElementById('notes-select');
-    const notesRenameInput = document.getElementById('notes-rename-input');
-    const noteAddBtn       = document.getElementById('note-add-btn');
-    const noteDeleteBtn    = document.getElementById('note-delete-btn');
-    const notepadArea      = document.getElementById('notepad-area');
+    const dpGreetingIcon  = document.getElementById('dp-greeting-icon');
+    const dpGreeting      = document.getElementById('dp-greeting');
+    const dpDateDisplay   = document.getElementById('dp-date-display');
+    const dpTemplateBtn   = document.getElementById('dp-template-btn');
+    const dpResetBtn      = document.getElementById('dp-reset-btn');
+    const dpProgressText  = document.getElementById('dp-progress-text');
+    const dpProgressFill  = document.getElementById('dp-progress-fill');
+    const dpPeriodBtns    = document.querySelectorAll('.dp-period-btn');
+    const dpTimelineList  = document.getElementById('dp-timeline-list');
+    const dpQuickAddForm  = document.getElementById('dp-quick-add-form');
+    const dpInputTime     = document.getElementById('dp-input-time');
+    const dpInputTask     = document.getElementById('dp-input-task');
+    const dpInputPeriod   = document.getElementById('dp-input-period');
+    const dpBig3List      = document.getElementById('dp-big3-list');
+    const dpHabitsList    = document.getElementById('dp-habits-list');
+    const dpAddHabitBtn   = document.getElementById('dp-add-habit-btn');
+    const dpScratchpad    = document.getElementById('dp-scratchpad');
+    const dpAutosaveBadge = document.getElementById('dp-autosave-indicator');
 
-    let savedNotes = [];
+    // Default template items for waking up and planning the day
+    const DEFAULT_DAY_TEMPLATE = {
+        filterPeriod: 'all',
+        big3: [
+            { text: 'Finish main website project milestone', done: false },
+            { text: 'Complete daily learning & code practice', done: false },
+            { text: '30-minute workout or outdoor walk', done: false }
+        ],
+        habits: [
+            { id: 'h1', text: '💧 Drink 500ml water upon waking', done: false },
+            { id: 'h2', text: '🏃 15m Morning stretch / workout', done: false },
+            { id: 'h3', text: '🎯 Review & build today\'s schedule', done: false },
+            { id: 'h4', text: '📖 Read 15 mins', done: false },
+            { id: 'h5', text: '🚫 No mindless social media before work', done: false }
+        ],
+        blocks: [
+            { id: 'b1', time: '07:00 - 08:30', task: 'Wake up, hydrate, morning stretch & healthy breakfast', period: 'morning', done: false },
+            { id: 'b2', time: '08:30 - 09:30', task: 'Review priorities, check messages & plan schedule', period: 'morning', done: false },
+            { id: 'b3', time: '09:30 - 12:00', task: 'Deep Focus Session: Main Project Work', period: 'morning', done: false },
+            { id: 'b4', time: '12:00 - 01:00', task: 'Lunch break, walk outside & recharge', period: 'afternoon', done: false },
+            { id: 'b5', time: '01:00 - 03:30', task: 'Secondary tasks, website testing & review', period: 'afternoon', done: false },
+            { id: 'b6', time: '03:30 - 05:00', task: 'Workout session, wrap up work & save progress', period: 'afternoon', done: false },
+            { id: 'b7', time: '06:00 - 08:00', task: 'Dinner, personal hobbies & relax', period: 'evening', done: false },
+            { id: 'b8', time: '09:00 - 10:30', task: 'Wind down, read & prepare for tomorrow', period: 'evening', done: false }
+        ],
+        scratchpad: ''
+    };
+
+    let dayPlanner = null;
     try {
-        savedNotes = JSON.parse(localStorage.getItem('ws-notes-list') || '[]');
+        dayPlanner = JSON.parse(localStorage.getItem('zen_day_planner_data'));
     } catch(e) {
-        savedNotes = [];
+        dayPlanner = null;
     }
 
-    if (!Array.isArray(savedNotes) || savedNotes.length === 0) {
-        const legacyNote = localStorage.getItem('ws-notepad') || '';
-        savedNotes = [{ id: 'note-1', customTitle: '', content: legacyNote }];
-        localStorage.setItem('ws-notes-list', JSON.stringify(savedNotes));
+    if (!dayPlanner || !Array.isArray(dayPlanner.blocks)) {
+        dayPlanner = JSON.parse(JSON.stringify(DEFAULT_DAY_TEMPLATE));
+        localStorage.setItem('zen_day_planner_data', JSON.stringify(dayPlanner));
     }
 
-    let activeNoteId = localStorage.getItem('ws-active-note-id') || savedNotes[0].id;
-    if (!savedNotes.some(n => n.id === activeNoteId)) {
-        activeNoteId = savedNotes[0].id;
-    }
+    let dpActivePeriod = 'all';
 
-    function getNoteTitle(n, idx) {
-        if (n.customTitle && n.customTitle.trim()) {
-            return n.customTitle.trim();
+    function saveDayPlanner() {
+        localStorage.setItem('zen_day_planner_data', JSON.stringify(dayPlanner));
+        if (dpAutosaveBadge) {
+            dpAutosaveBadge.innerHTML = '<i class="bx bx-check"></i> Auto-saved';
+            dpAutosaveBadge.style.opacity = '1';
         }
-        const firstLine = (n.content || '').split('\n').find(l => l.trim().length > 0);
-        if (firstLine) {
-            return firstLine.trim().slice(0, 28);
-        }
-        return `Note ${idx + 1}`;
     }
 
-    function saveNotesToStorage() {
-        localStorage.setItem('ws-notes-list', JSON.stringify(savedNotes));
-        localStorage.setItem('ws-active-note-id', activeNoteId);
-    }
+    // Dynamic greeting & date
+    function updateDayPlannerHeader() {
+        const now = new Date();
+        const hour = now.getHours();
 
-    function renderNotesDropdown() {
-        if (!notesSelect) return;
-        notesSelect.innerHTML = '';
-        savedNotes.forEach((n, idx) => {
-            const opt = document.createElement('option');
-            opt.value = n.id;
-            opt.textContent = getNoteTitle(n, idx);
-            if (n.id === activeNoteId) opt.selected = true;
-            notesSelect.appendChild(opt);
-        });
-    }
-
-    function loadActiveNoteContent() {
-        if (!notepadArea) return;
-        const cur = savedNotes.find(n => n.id === activeNoteId);
-        notepadArea.value = cur ? cur.content : '';
-    }
-
-    // Inline rename helpers
-    function startRenamingNote() {
-        if (!notesSelect || !notesRenameInput) return;
-        const cur = savedNotes.find(n => n.id === activeNoteId);
-        if (!cur) return;
-        const idx = savedNotes.indexOf(cur);
-        const currentTitle = getNoteTitle(cur, idx);
-
-        notesSelect.style.display = 'none';
-        notesRenameInput.style.display = 'inline-block';
-        notesRenameInput.value = currentTitle;
-        notesRenameInput.focus();
-        notesRenameInput.select();
-    }
-
-    function finishRenamingNote(save = true) {
-        if (!notesRenameInput || notesRenameInput.style.display === 'none') return;
-        if (save) {
-            const cur = savedNotes.find(n => n.id === activeNoteId);
-            if (cur) {
-                const trimmed = notesRenameInput.value.trim();
-                cur.customTitle = trimmed; // If left empty, clears custom title so it auto-syncs with typed text
-                saveNotesToStorage();
-                renderNotesDropdown();
+        if (dpGreeting && dpGreetingIcon) {
+            if (hour >= 5 && hour < 12) {
+                dpGreetingIcon.textContent = '☀️';
+                dpGreeting.textContent = "Good morning! Let's build your day.";
+            } else if (hour >= 12 && hour < 17) {
+                dpGreetingIcon.textContent = '🌤️';
+                dpGreeting.textContent = 'Good afternoon! Keep up the momentum.';
+            } else {
+                dpGreetingIcon.textContent = '🌙';
+                dpGreeting.textContent = 'Good evening! Wind down & review your wins.';
             }
         }
-        notesRenameInput.style.display = 'none';
-        if (notesSelect) notesSelect.style.display = 'inline-block';
+
+        if (dpDateDisplay) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dpDateDisplay.textContent = now.toLocaleDateString(undefined, options);
+        }
     }
 
-    if (notesRenameInput) {
-        notesRenameInput.addEventListener('blur', () => finishRenamingNote(true));
-        notesRenameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                finishRenamingNote(true);
-            } else if (e.key === 'Escape') {
-                e.preventDefault();
-                finishRenamingNote(false);
+    // Render Timeline Blocks
+    function renderTimeBlocks() {
+        if (!dpTimelineList) return;
+
+        const filtered = (dpActivePeriod === 'all')
+            ? dayPlanner.blocks
+            : dayPlanner.blocks.filter(b => b.period === dpActivePeriod);
+
+        // Update progress bar
+        const total = dayPlanner.blocks.length;
+        const doneCount = dayPlanner.blocks.filter(b => b.done).length;
+        const pct = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+
+        if (dpProgressText) {
+            dpProgressText.textContent = `${doneCount} of ${total} completed (${pct}%)`;
+        }
+        if (dpProgressFill) {
+            dpProgressFill.style.width = `${pct}%`;
+        }
+
+        if (filtered.length === 0) {
+            dpTimelineList.innerHTML = `
+                <div style="text-align:center; padding: 2.5rem 1rem; color: var(--color-text-dim);">
+                    <i class="bx bx-time" style="font-size: 2.5rem; margin-bottom: 0.5rem; display:block;"></i>
+                    <p style="font-size: 0.9rem;">No blocks scheduled for this period.</p>
+                    <p style="font-size: 0.78rem;">Use the quick add bar below to schedule an activity!</p>
+                </div>
+            `;
+            return;
+        }
+
+        dpTimelineList.innerHTML = filtered.map(b => {
+            const periodEmoji = (b.period === 'morning') ? '🌅' : (b.period === 'afternoon') ? '☀️' : '🌙';
+            return `
+                <div class="dp-block-item ${b.done ? 'is-done' : ''}" data-id="${b.id}">
+                    <input type="checkbox" class="dp-block-checkbox" ${b.done ? 'checked' : ''} title="Mark done">
+                    <span class="dp-block-time" title="Scheduled time">${esc(b.time)}</span>
+                    <input type="text" class="dp-block-task" value="${esc(b.task)}" title="Click to edit task">
+                    <span class="dp-block-period-badge">${periodEmoji} ${esc(b.period)}</span>
+                    <button type="button" class="dp-block-del-btn" title="Delete block">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                </div>
+            `;
+        }).join('');
+
+        // Wire up block listeners
+        dpTimelineList.querySelectorAll('.dp-block-item').forEach(itemEl => {
+            const id = itemEl.getAttribute('data-id');
+            const block = dayPlanner.blocks.find(b => b.id === id);
+            if (!block) return;
+
+            const chk = itemEl.querySelector('.dp-block-checkbox');
+            const taskIn = itemEl.querySelector('.dp-block-task');
+            const delBtn = itemEl.querySelector('.dp-block-del-btn');
+
+            if (chk) {
+                chk.addEventListener('change', () => {
+                    block.done = chk.checked;
+                    itemEl.classList.toggle('is-done', block.done);
+                    saveDayPlanner();
+                    renderTimeBlocks();
+                });
+            }
+
+            if (taskIn) {
+                taskIn.addEventListener('input', () => {
+                    block.task = taskIn.value;
+                    saveDayPlanner();
+                });
+            }
+
+            if (delBtn) {
+                delBtn.addEventListener('click', () => {
+                    dayPlanner.blocks = dayPlanner.blocks.filter(b => b.id !== id);
+                    saveDayPlanner();
+                    renderTimeBlocks();
+                });
             }
         });
     }
 
-    if (notesSelect) {
-        // Single click/press chooses note
-        notesSelect.addEventListener('change', () => {
-            activeNoteId = notesSelect.value;
-            localStorage.setItem('ws-active-note-id', activeNoteId);
-            loadActiveNoteContent();
-        });
+    // Render The Big 3 Priorities
+    function renderBig3() {
+        if (!dpBig3List) return;
 
-        // Double click to rename inline
-        notesSelect.addEventListener('dblclick', (e) => {
+        // Ensure 3 items exist
+        if (!Array.isArray(dayPlanner.big3) || dayPlanner.big3.length < 3) {
+            dayPlanner.big3 = [
+                { text: '', done: false },
+                { text: '', done: false },
+                { text: '', done: false }
+            ];
+        }
+
+        const icons = ['⭐', '🎯', '🚀'];
+        dpBig3List.innerHTML = dayPlanner.big3.map((item, idx) => `
+            <div class="dp-big3-item ${item.done ? 'is-done' : ''}" data-idx="${idx}">
+                <input type="checkbox" class="dp-block-checkbox dp-big3-check" ${item.done ? 'checked' : ''} title="Mark priority completed">
+                <span class="dp-big3-num">${icons[idx] || (idx + 1)}</span>
+                <input type="text" class="dp-big3-input" value="${esc(item.text || '')}" placeholder="Priority #${idx + 1} for today...">
+            </div>
+        `).join('');
+
+        dpBig3List.querySelectorAll('.dp-big3-item').forEach(el => {
+            const idx = parseInt(el.getAttribute('data-idx'));
+            const chk = el.querySelector('.dp-big3-check');
+            const input = el.querySelector('.dp-big3-input');
+
+            if (chk) {
+                chk.addEventListener('change', () => {
+                    dayPlanner.big3[idx].done = chk.checked;
+                    el.classList.toggle('is-done', chk.checked);
+                    saveDayPlanner();
+                });
+            }
+
+            if (input) {
+                input.addEventListener('input', () => {
+                    dayPlanner.big3[idx].text = input.value;
+                    saveDayPlanner();
+                });
+            }
+        });
+    }
+
+    // Render Daily Habits
+    function renderHabits() {
+        if (!dpHabitsList) return;
+        if (!Array.isArray(dayPlanner.habits)) dayPlanner.habits = [];
+
+        dpHabitsList.innerHTML = dayPlanner.habits.map(h => `
+            <div class="dp-habit-item ${h.done ? 'is-done' : ''}" data-id="${h.id}">
+                <label class="dp-habit-left">
+                    <input type="checkbox" class="dp-block-checkbox dp-habit-check" ${h.done ? 'checked' : ''}>
+                    <span class="dp-habit-title">${esc(h.text)}</span>
+                </label>
+                <button type="button" class="dp-habit-del-btn" title="Delete habit">
+                    <i class="bx bx-x"></i>
+                </button>
+            </div>
+        `).join('');
+
+        dpHabitsList.querySelectorAll('.dp-habit-item').forEach(el => {
+            const id = el.getAttribute('data-id');
+            const habit = dayPlanner.habits.find(h => h.id === id);
+            if (!habit) return;
+
+            const chk = el.querySelector('.dp-habit-check');
+            const delBtn = el.querySelector('.dp-habit-del-btn');
+
+            if (chk) {
+                chk.addEventListener('change', () => {
+                    habit.done = chk.checked;
+                    el.classList.toggle('is-done', habit.done);
+                    saveDayPlanner();
+                });
+            }
+
+            if (delBtn) {
+                delBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dayPlanner.habits = dayPlanner.habits.filter(h => h.id !== id);
+                    saveDayPlanner();
+                    renderHabits();
+                });
+            }
+        });
+    }
+
+    // Add Habit Button
+    if (dpAddHabitBtn) {
+        dpAddHabitBtn.addEventListener('click', () => {
+            const text = prompt('Enter a new daily habit or morning routine:');
+            if (text && text.trim()) {
+                dayPlanner.habits.push({
+                    id: 'h_' + Date.now(),
+                    text: text.trim(),
+                    done: false
+                });
+                saveDayPlanner();
+                renderHabits();
+            }
+        });
+    }
+
+    // Quick Add Time Block Form
+    if (dpQuickAddForm) {
+        dpQuickAddForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            startRenamingNote();
-        });
+            const time = dpInputTime ? dpInputTime.value.trim() : '';
+            const task = dpInputTask ? dpInputTask.value.trim() : '';
+            const period = dpInputPeriod ? dpInputPeriod.value : 'morning';
 
-        // Double tap detection for touch screens
-        let lastTap = 0;
-        notesSelect.addEventListener('touchend', (e) => {
-            const now = Date.now();
-            if (now - lastTap < 350 && now - lastTap > 0) {
-                e.preventDefault();
-                startRenamingNote();
-            }
-            lastTap = now;
-        });
-    }
+            if (!time || !task) return;
 
-    if (notepadArea) {
-        notepadArea.addEventListener('input', () => {
-            const cur = savedNotes.find(n => n.id === activeNoteId);
-            if (cur) {
-                cur.content = notepadArea.value;
-                // Auto-sync typed content to dropdown if no custom title was manually set
-                if (!cur.customTitle) {
-                    const idx = savedNotes.indexOf(cur);
-                    const opt = notesSelect ? notesSelect.querySelector(`option[value="${activeNoteId}"]`) : null;
-                    if (opt) {
-                        opt.textContent = getNoteTitle(cur, idx);
-                    }
-                }
-                saveNotesToStorage();
-            }
-        });
-    }
-
-    if (noteAddBtn) {
-        noteAddBtn.addEventListener('click', () => {
-            const newId = 'note-' + Date.now();
-            const newNote = {
-                id: newId,
-                customTitle: '',
-                content: ''
+            const newBlock = {
+                id: 'b_' + Date.now(),
+                time,
+                task,
+                period,
+                done: false
             };
-            savedNotes.push(newNote);
-            activeNoteId = newId;
-            saveNotesToStorage();
-            renderNotesDropdown();
-            loadActiveNoteContent();
-            if (notepadArea) notepadArea.focus();
+
+            dayPlanner.blocks.push(newBlock);
+            saveDayPlanner();
+            renderTimeBlocks();
+
+            if (dpInputTime) dpInputTime.value = '';
+            if (dpInputTask) dpInputTask.value = '';
+            if (dpInputTime) dpInputTime.focus();
         });
     }
 
-    if (noteDeleteBtn) {
-        noteDeleteBtn.addEventListener('click', () => {
-            if (savedNotes.length <= 1) {
-                savedNotes[0].content = '';
-                savedNotes[0].customTitle = '';
-                saveNotesToStorage();
-                renderNotesDropdown();
-                loadActiveNoteContent();
-                return;
-            }
-            const idx = savedNotes.findIndex(n => n.id === activeNoteId);
-            if (idx !== -1) {
-                savedNotes.splice(idx, 1);
-                activeNoteId = savedNotes[Math.max(0, idx - 1)].id;
-                saveNotesToStorage();
-                renderNotesDropdown();
-                loadActiveNoteContent();
+    // Period Filter Tabs
+    dpPeriodBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            dpPeriodBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            dpActivePeriod = btn.getAttribute('data-period') || 'all';
+            renderTimeBlocks();
+        });
+    });
+
+    // Daily Scratchpad
+    if (dpScratchpad) {
+        dpScratchpad.value = dayPlanner.scratchpad || '';
+        dpScratchpad.addEventListener('input', () => {
+            dayPlanner.scratchpad = dpScratchpad.value;
+            saveDayPlanner();
+        });
+    }
+
+    // "Start Fresh Day" (Resets checks for today so you can build your day)
+    if (dpResetBtn) {
+        dpResetBtn.addEventListener('click', () => {
+            if (confirm('Start a fresh day? This will reset all your completed checkboxes for today.')) {
+                dayPlanner.blocks.forEach(b => b.done = false);
+                dayPlanner.big3.forEach(b => b.done = false);
+                dayPlanner.habits.forEach(h => h.done = false);
+                saveDayPlanner();
+                renderTimeBlocks();
+                renderBig3();
+                renderHabits();
             }
         });
     }
 
-    renderNotesDropdown();
-    loadActiveNoteContent();
+    // "Sample Template"
+    if (dpTemplateBtn) {
+        dpTemplateBtn.addEventListener('click', () => {
+            if (confirm("Load the sample productive day schedule? This will set up a standard morning, afternoon, and evening routine.")) {
+                dayPlanner.blocks = JSON.parse(JSON.stringify(DEFAULT_DAY_TEMPLATE.blocks));
+                dayPlanner.big3 = JSON.parse(JSON.stringify(DEFAULT_DAY_TEMPLATE.big3));
+                dayPlanner.habits = JSON.parse(JSON.stringify(DEFAULT_DAY_TEMPLATE.habits));
+                saveDayPlanner();
+                renderTimeBlocks();
+                renderBig3();
+                renderHabits();
+            }
+        });
+    }
+
+    // Initialize Day Planner
+    updateDayPlannerHeader();
+    renderTimeBlocks();
+    renderBig3();
+    renderHabits();
 
     /* =========================================================
        SMOOTH POINTER DRAG & DROP REORDERING ENGINE
@@ -898,6 +1074,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const pmFormTags          = document.getElementById('pm-form-tags');
     const pmFormDesc          = document.getElementById('pm-form-desc');
 
+    // Drag & Drop Image Uploader elements
+    const pmImageDropzone     = document.getElementById('pm-image-dropzone');
+    const pmFileInput         = document.getElementById('pm-file-input');
+    const pmDropzonePrompt    = document.getElementById('pm-dropzone-prompt');
+    const pmDropzonePreview   = document.getElementById('pm-dropzone-preview');
+    const pmPreviewImg        = document.getElementById('pm-preview-img');
+    const pmPreviewRemoveBtn  = document.getElementById('pm-preview-remove-btn');
+
+    // Enlarged Project Details Modal elements
+    const pmDetailsModal        = document.getElementById('pm-details-modal');
+    const pmDetailsCloseBtn     = document.getElementById('pm-details-close-btn');
+    const pmDetailsBanner       = document.getElementById('pm-details-banner');
+    const pmDetailsStatus       = document.getElementById('pm-details-status');
+    const pmDetailsTitle        = document.getElementById('pm-details-title');
+    const pmDetailsTags         = document.getElementById('pm-details-tags');
+    const pmDetailsDesc         = document.getElementById('pm-details-desc');
+    const pmDetailsLinkSection  = document.getElementById('pm-details-link-section');
+    const pmDetailsLinkUrl      = document.getElementById('pm-details-link-url');
+    const pmDetailsDeleteBtn    = document.getElementById('pm-details-delete-btn');
+    const pmDetailsEditBtn      = document.getElementById('pm-details-edit-btn');
+    const pmDetailsLaunchBtn    = document.getElementById('pm-details-launch-btn');
+    let currentDetailProjectId  = null;
+
     // Default Seed Projects (loaded if localStorage is empty)
     const SEED_PROJECTS = [
         {
@@ -1103,22 +1302,18 @@ document.addEventListener('DOMContentLoaded', () => {
             : `background: ${p.gradient || 'var(--color-primary)'};`;
 
         const placeholderIcon = p.image ? '' : `<i class="bx bx-code-alt pm-card-placeholder-icon"></i>`;
-        const linkHref = p.link ? escapeHtml(p.link) : '#';
-
         const tagsHtml = (p.tags && p.tags.length)
-            ? p.tags.map(t => `<span class="pm-tag-pill" onclick="window.pmSelectTag('${escapeHtml(t)}')">${escapeHtml(t)}</span>`).join('')
+            ? p.tags.map(t => `<span class="pm-tag-pill" onclick="event.stopPropagation(); window.pmSelectTag('${escapeHtml(t)}')">${escapeHtml(t)}</span>`).join('')
             : '';
 
         if (view === 'list') {
             return `
-                <div class="pm-card-item" data-id="${p.id}">
+                <div class="pm-card-item" data-id="${p.id}" onclick="window.pmOpenDetails('${p.id}')" title="Click to view details &amp; edit">
                     <div class="pm-card-banner" style="${bannerStyle}">
                         ${placeholderIcon}
                     </div>
                     <div class="pm-card-body">
-                        <div class="pm-card-title">
-                            <a href="${linkHref}" target="_blank" rel="noopener noreferrer">${escapeHtml(p.title)}</a>
-                        </div>
+                        <div class="pm-card-title">${escapeHtml(p.title)}</div>
                         <p class="pm-card-desc">${escapeHtml(p.desc || 'No description provided.')}</p>
                     </div>
                     <div class="pm-card-tags">
@@ -1127,46 +1322,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="pm-list-status">
                         <span class="pm-status-badge ${statusClass}">${escapeHtml(p.status || 'Active')}</span>
                     </div>
-                    <div class="pm-card-footer">
-                        <a href="${linkHref}" target="_blank" rel="noopener noreferrer" class="btn-icon ws-btn-sm" title="Open Project">
-                            <i class="bx bx-link-external"></i>
-                        </a>
-                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmEditProject('${p.id}')" title="Edit Project">
-                            <i class="bx bx-edit"></i>
-                        </button>
-                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmDeleteProject('${p.id}')" title="Delete Project">
-                            <i class="bx bx-trash"></i>
-                        </button>
-                    </div>
                 </div>
             `;
         }
 
         if (view === 'tiles') {
             return `
-                <div class="pm-card-item" data-id="${p.id}">
+                <div class="pm-card-item" data-id="${p.id}" onclick="window.pmOpenDetails('${p.id}')" title="Click to view details &amp; edit">
                     <div class="pm-card-banner" style="${bannerStyle}">
                         ${placeholderIcon}
                     </div>
                     <div class="pm-card-body">
-                        <div class="pm-card-title">
-                            <a href="${linkHref}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(p.title)}">${escapeHtml(p.title)}</a>
-                        </div>
+                        <div class="pm-card-title" title="${escapeHtml(p.title)}">${escapeHtml(p.title)}</div>
                         <p class="pm-card-desc">${escapeHtml(p.desc || 'No description provided.')}</p>
                         <div class="pm-card-tags">
                             ${tagsHtml}
                         </div>
-                    </div>
-                    <div class="pm-card-footer">
-                        <a href="${linkHref}" target="_blank" rel="noopener noreferrer" class="btn-icon ws-btn-sm" title="Open Project">
-                            <i class="bx bx-link-external"></i>
-                        </a>
-                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmEditProject('${p.id}')" title="Edit Project">
-                            <i class="bx bx-edit"></i>
-                        </button>
-                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmDeleteProject('${p.id}')" title="Delete Project">
-                            <i class="bx bx-trash"></i>
-                        </button>
                     </div>
                 </div>
             `;
@@ -1174,32 +1345,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Default: Cards View
         return `
-            <div class="pm-card-item" data-id="${p.id}">
+            <div class="pm-card-item" data-id="${p.id}" onclick="window.pmOpenDetails('${p.id}')" title="Click to view details &amp; edit">
                 <div class="pm-card-banner" style="${bannerStyle}">
                     ${placeholderIcon}
                     <span class="pm-status-badge ${statusClass}">${escapeHtml(p.status || 'Active')}</span>
                 </div>
                 <div class="pm-card-body">
-                    <h4 class="pm-card-title">
-                        <a href="${linkHref}" target="_blank" rel="noopener noreferrer">${escapeHtml(p.title)}</a>
-                    </h4>
+                    <h4 class="pm-card-title">${escapeHtml(p.title)}</h4>
                     <p class="pm-card-desc">${escapeHtml(p.desc || 'No description provided.')}</p>
                     <div class="pm-card-tags">
                         ${tagsHtml}
-                    </div>
-                </div>
-                <div class="pm-card-footer">
-                    <a href="${linkHref}" target="_blank" rel="noopener noreferrer" class="pm-btn-open">
-                        <span>Open</span>
-                        <i class="bx bx-link-external"></i>
-                    </a>
-                    <div class="pm-card-actions">
-                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmEditProject('${p.id}')" title="Edit Project">
-                            <i class="bx bx-edit"></i>
-                        </button>
-                        <button type="button" class="btn-icon ws-btn-sm" onclick="window.pmDeleteProject('${p.id}')" title="Delete Project">
-                            <i class="bx bx-trash"></i>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -1292,6 +1447,241 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProjectManager();
     };
 
+    // --- Image Preview & Dropzone Helper Functions ---
+    function setProjectImagePreview(urlOrData) {
+        const val = (urlOrData || '').trim();
+        if (pmFormImage) pmFormImage.value = val;
+
+        if (val) {
+            if (pmPreviewImg) pmPreviewImg.src = val;
+            if (pmDropzonePreview) pmDropzonePreview.style.display = 'flex';
+            if (pmDropzonePrompt) pmDropzonePrompt.style.display = 'none';
+        } else {
+            if (pmPreviewImg) pmPreviewImg.src = '';
+            if (pmDropzonePreview) pmDropzonePreview.style.display = 'none';
+            if (pmDropzonePrompt) pmDropzonePrompt.style.display = 'flex';
+            if (pmFileInput) pmFileInput.value = '';
+        }
+    }
+
+    function processImageFile(file) {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file (PNG, JPG, WebP, GIF, SVG).');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const rawData = e.target.result;
+            // Downscale oversized images so localStorage doesn't exceed storage quotas
+            const img = new Image();
+            img.onload = () => {
+                const maxDim = 900;
+                let w = img.width;
+                let h = img.height;
+                if (w > maxDim || h > maxDim) {
+                    if (w > h) {
+                        h = Math.round((h * maxDim) / w);
+                        w = maxDim;
+                    } else {
+                        w = Math.round((w * maxDim) / h);
+                        h = maxDim;
+                    }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                const optimizedData = canvas.toDataURL('image/jpeg', 0.88);
+                setProjectImagePreview(optimizedData);
+            };
+            img.onerror = () => {
+                setProjectImagePreview(rawData);
+            };
+            img.src = rawData;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Dropzone Drag and Drop Listeners
+    if (pmImageDropzone) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+            pmImageDropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                pmImageDropzone.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            pmImageDropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                pmImageDropzone.classList.remove('drag-over');
+            });
+        });
+
+        pmImageDropzone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) {
+                processImageFile(dt.files[0]);
+            }
+        });
+
+        pmImageDropzone.addEventListener('click', (e) => {
+            if (e.target.closest('#pm-preview-remove-btn')) return;
+            // Allow opening file browser if prompt is visible or browse link is clicked
+            if (pmDropzonePreview.style.display === 'none' || e.target.closest('.pm-browse-link')) {
+                if (pmFileInput) pmFileInput.click();
+            }
+        });
+    }
+
+    if (pmFileInput) {
+        pmFileInput.addEventListener('change', () => {
+            if (pmFileInput.files && pmFileInput.files.length > 0) {
+                processImageFile(pmFileInput.files[0]);
+            }
+        });
+    }
+
+    if (pmPreviewRemoveBtn) {
+        pmPreviewRemoveBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setProjectImagePreview('');
+        });
+    }
+
+    if (pmFormImage) {
+        pmFormImage.addEventListener('input', () => {
+            const val = pmFormImage.value.trim();
+            if (val) {
+                if (pmPreviewImg) pmPreviewImg.src = val;
+                if (pmDropzonePreview) pmDropzonePreview.style.display = 'flex';
+                if (pmDropzonePrompt) pmDropzonePrompt.style.display = 'none';
+            } else {
+                setProjectImagePreview('');
+            }
+        });
+    }
+
+    // --- Enlarged Project Details Modal ---
+    window.pmOpenDetails = function(id) {
+        const project = projects.find(p => p.id === id);
+        if (!project) return;
+        currentDetailProjectId = id;
+
+        if (pmDetailsTitle) pmDetailsTitle.textContent = project.title || 'Untitled Project';
+
+        // Banner
+        if (pmDetailsBanner) {
+            const statusClass = getStatusClass(project.status);
+            if (project.image) {
+                pmDetailsBanner.style.backgroundImage = `url('${escapeHtml(project.image)}')`;
+                pmDetailsBanner.style.background = '';
+                pmDetailsBanner.innerHTML = `
+                    <span class="pm-status-badge ${statusClass}" id="pm-details-status">${escapeHtml(project.status || 'Active')}</span>
+                    <button type="button" class="pm-details-close-btn" id="pm-details-close-btn" title="Close" aria-label="Close">
+                        <i class="bx bx-x"></i>
+                    </button>
+                `;
+            } else {
+                pmDetailsBanner.style.backgroundImage = 'none';
+                pmDetailsBanner.style.background = project.gradient || 'var(--color-primary)';
+                pmDetailsBanner.innerHTML = `
+                    <i class="bx bx-code-alt pm-card-placeholder-icon"></i>
+                    <span class="pm-status-badge ${statusClass}" id="pm-details-status">${escapeHtml(project.status || 'Active')}</span>
+                    <button type="button" class="pm-details-close-btn" id="pm-details-close-btn" title="Close" aria-label="Close">
+                        <i class="bx bx-x"></i>
+                    </button>
+                `;
+            }
+            const bannerClose = pmDetailsBanner.querySelector('#pm-details-close-btn');
+            if (bannerClose) bannerClose.addEventListener('click', closeDetailsModal);
+        }
+
+        // Tags
+        if (pmDetailsTags) {
+            if (project.tags && project.tags.length > 0) {
+                pmDetailsTags.innerHTML = project.tags.map(t => `
+                    <span class="pm-tag-pill" onclick="closeDetailsModal(); window.pmSelectTag('${escapeHtml(t)}')">
+                        ${escapeHtml(t)}
+                    </span>
+                `).join('');
+                pmDetailsTags.style.display = 'flex';
+            } else {
+                pmDetailsTags.innerHTML = '';
+                pmDetailsTags.style.display = 'none';
+            }
+        }
+
+        // Expanded Description
+        if (pmDetailsDesc) {
+            pmDetailsDesc.textContent = project.desc || 'No description provided for this project.';
+        }
+
+        // Project Location Link Section
+        const linkHref = (project.link || '').trim();
+        if (pmDetailsLinkSection && pmDetailsLinkUrl) {
+            if (linkHref) {
+                pmDetailsLinkSection.style.display = 'flex';
+                pmDetailsLinkUrl.href = linkHref;
+                pmDetailsLinkUrl.textContent = linkHref;
+            } else {
+                pmDetailsLinkSection.style.display = 'none';
+            }
+        }
+
+        // Launch Button
+        if (pmDetailsLaunchBtn) {
+            if (linkHref) {
+                pmDetailsLaunchBtn.href = linkHref;
+                pmDetailsLaunchBtn.style.display = 'inline-flex';
+            } else {
+                pmDetailsLaunchBtn.style.display = 'none';
+            }
+        }
+
+        if (pmDetailsModal) {
+            pmDetailsModal.style.display = 'flex';
+        }
+    };
+
+    function closeDetailsModal() {
+        if (pmDetailsModal) pmDetailsModal.style.display = 'none';
+        currentDetailProjectId = null;
+    }
+
+    if (pmDetailsCloseBtn) pmDetailsCloseBtn.addEventListener('click', closeDetailsModal);
+    if (pmDetailsModal) {
+        pmDetailsModal.addEventListener('click', (e) => {
+            if (e.target === pmDetailsModal) closeDetailsModal();
+        });
+    }
+
+    if (pmDetailsEditBtn) {
+        pmDetailsEditBtn.addEventListener('click', () => {
+            if (currentDetailProjectId) {
+                const idToEdit = currentDetailProjectId;
+                closeDetailsModal();
+                window.pmEditProject(idToEdit);
+            }
+        });
+    }
+
+    if (pmDetailsDeleteBtn) {
+        pmDetailsDeleteBtn.addEventListener('click', () => {
+            if (currentDetailProjectId) {
+                const idToDelete = currentDetailProjectId;
+                closeDetailsModal();
+                window.pmDeleteProject(idToDelete);
+            }
+        });
+    }
+
+    // --- Edit Project Flow ---
     window.pmEditProject = function(id) {
         const project = projects.find(p => p.id === id);
         if (!project) return;
@@ -1299,10 +1689,11 @@ document.addEventListener('DOMContentLoaded', () => {
         pmFormId.value = project.id;
         pmFormTitle.value = project.title || '';
         pmFormLink.value = project.link || '';
-        pmFormImage.value = project.image || '';
         pmFormStatus.value = project.status || 'In Progress';
         pmFormTags.value = (project.tags || []).join(', ');
         pmFormDesc.value = project.desc || '';
+
+        setProjectImagePreview(project.image || '');
 
         if (pmModalTitle) {
             pmModalTitle.innerHTML = `<i class="bx bx-edit"></i> Edit Project`;
@@ -1373,12 +1764,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pmModal) pmModal.style.display = 'none';
         if (pmForm) pmForm.reset();
         pmFormId.value = '';
+        setProjectImagePreview('');
     }
 
     if (pmAddBtn) {
         pmAddBtn.addEventListener('click', () => {
             if (pmForm) pmForm.reset();
             pmFormId.value = '';
+            setProjectImagePreview('');
             if (pmModalTitle) {
                 pmModalTitle.innerHTML = `<i class="bx bx-folder-plus"></i> New Project`;
             }
@@ -1390,6 +1783,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pmSidebarAddBtn.addEventListener('click', () => {
             if (pmForm) pmForm.reset();
             pmFormId.value = '';
+            setProjectImagePreview('');
             if (pmModalTitle) {
                 pmModalTitle.innerHTML = `<i class="bx bx-folder-plus"></i> New Project`;
             }
@@ -1401,6 +1795,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pmEmptyAddBtn.addEventListener('click', () => {
             if (pmForm) pmForm.reset();
             pmFormId.value = '';
+            setProjectImagePreview('');
             openModal();
         });
     }
